@@ -2,13 +2,16 @@ import numpy as np
 import yaml
 
 
+# noinspection PyDictCreation
 def generate_mmcp_file(filename, num_elements=5, num_vars=10, num_jobs=10):
     """Generates an example MMCF file (YAML wrapper) with synthetic data."""
 
-    data = {"c_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)],
-            "A_list": [np.random.rand(num_vars, num_vars).tolist() for _ in range(num_elements)],
-            "b_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)],
-            "d_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)]}
+    data = {
+        "c_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)],
+        "A_list": [np.random.rand(num_vars, num_vars).tolist() for _ in range(num_elements)],
+        "b_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)],
+        "d_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)]
+    }
 
     # Linear Model Data
     data["model_types"] = [1 if data["d_list"][i] is not None else 2 for i in range(num_elements)]

@@ -12,6 +12,8 @@ class LoadDataTab(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.load_button = None
+        self.label = None
         self.init_ui()
 
     def init_ui(self):
@@ -20,7 +22,7 @@ class LoadDataTab(QWidget):
 
         self.load_button = QPushButton("Browse", self)
         self.load_button.move(150, 15)
-        self.load_button.clicked.connect(self.browse_file)
+        self.load_button.clicked.connect(self.browse_file)  # type: ignore
 
     def browse_file(self):
         options = QFileDialog.Options()
@@ -30,7 +32,7 @@ class LoadDataTab(QWidget):
             try:
                 data = parse_mmcp_file(filename)
                 if data:
-                    self.data_loaded.emit(data)
+                    self.data_loaded.emit(data)  # type: ignore
                 else:
                     QMessageBox.critical(self, "Error", "Failed to parse .mmcp file. Please check the file format.")
             except Exception as e:

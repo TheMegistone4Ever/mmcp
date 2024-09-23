@@ -1,5 +1,7 @@
 from ortools.linear_solver import pywraplp
 
+from mmcp import Vars
+
 
 def solve(processing_times, precedence_graph, initial_weights, target_differences):
     """
@@ -16,11 +18,11 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
     """
     num_jobs = len(processing_times)
     weights = initial_weights.copy()
-    M = 1000  # Large constant
     tolerance = 1e-6  # Tolerance for convergence
+    completion_times = None
 
-    for _ in range(100):  # Limit iterations
-        completion_times = solve_weighted_completion_time(processing_times, precedence_graph, weights, M)
+    for _ in range(num_jobs):  # Limit iterations
+        completion_times = solve_weighted_completion_time(processing_times, precedence_graph, weights, Vars.M)
 
         max_diff = 0
         for i, j, target_diff in target_differences:
@@ -34,8 +36,8 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
         # Adjust weights based on differences (example logic)
         for i, j, target_diff in target_differences:
             if completion_times[i] - completion_times[j] > target_diff:
-                weights[i] -= 0.1  # Decrease weight for job i
-                weights[j] += 0.1  # Increase weight for job j
+                weights[i] -= 0.1  # Decrease weight for a job i
+                weights[j] += 0.1  # Increase weight for a job j
             else:
                 weights[i] += 0.1
                 weights[j] -= 0.1

@@ -2,13 +2,17 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QLineEdit, \
     QMessageBox, QMenu
 
-from mmcp import lm, cm
+from mmcp import lm, cm, Vars
 from .element_configuration_window import ElementConfigurationWindow
 
 
 class VisualizationTab(QWidget):
     def __init__(self, solution_display_tab):
         super().__init__()
+        self.solve_button = None
+        self.tree_widget = None
+        self.dimension_combo = None
+        self.dmc_label = None
         self.data = None
         self.solution_display_tab = solution_display_tab
 
@@ -27,11 +31,11 @@ class VisualizationTab(QWidget):
         self.tree_widget.setGeometry(50, 70, 700, 400)
         self.tree_widget.setHeaderLabels(["Elements"])
         self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree_widget.customContextMenuRequested.connect(self.show_context_menu)
+        self.tree_widget.customContextMenuRequested.connect(self.show_context_menu)  # type: ignore
 
         self.solve_button = QPushButton("Solve", self)
         self.solve_button.setGeometry(350, 480, 100, 30)
-        self.solve_button.clicked.connect(self.solve)
+        self.solve_button.clicked.connect(self.solve)  # type: ignore
         # self.solve_button.setEnabled(False)  # No need to disable initially
 
     def solve(self):
@@ -41,37 +45,38 @@ class VisualizationTab(QWidget):
                 selected_model = self.get_selected_model(i)
                 selected_criterion = self.get_selected_criterion(i)
 
+                solution = None
                 if selected_model == "Linear Model 1":
                     if selected_criterion == "Criterion 1":
                         solution = lm.first.criterion_1.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                              self.data["b_list"][i], 1000)
+                                                              self.data["b_list"][i], Vars.M)
                     elif selected_criterion == "Criterion 2":
                         solution = lm.first.criterion_2.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                              self.data["b_list"][i], 0.8)
+                                                              self.data["b_list"][i], Vars.z_min, Vars.alpha)
                     elif selected_criterion == "Criterion 3":
                         solution = lm.first.criterion_3.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                              self.data["b_list"][i], 0.5)
+                                                              self.data["b_list"][i], Vars.weights)
                 elif selected_model == "Linear Model 2":
                     if selected_criterion == "Criterion 1":
                         solution = lm.second.criterion_1.solve(self.data["c_list"][i], self.data["A_list"][i],
                                                                self.data["b_list"][i],
-                                                               self.data["d_list"][i], 1000)
+                                                               self.data["d_list"][i], Vars.M)
                     elif selected_criterion == "Criterion 2":
                         solution = lm.second.criterion_2.solve(self.data["c_list"][i], self.data["A_list"][i],
                                                                self.data["b_list"][i],
-                                                               self.data["d_list"][i], 0.8)
+                                                               self.data["d_list"][i], Vars.z_min, Vars.alpha)
                     elif selected_criterion == "Criterion 3":
                         solution = lm.second.criterion_3.solve(self.data["c_list"][i], self.data["A_list"][i],
                                                                self.data["b_list"][i],
-                                                               self.data["d_list"][i], 0.5)
+                                                               self.data["d_list"][i], Vars.weights)
                 elif selected_model == "Combinatorial Model":
                     if selected_criterion == "Criterion 1":
                         solution = cm.first.criterion_1.solve(self.data["processing_times"], self.data["weights"],
-                                                              self.data["precedence_graph"])
+                                                              self.data["precedence_graph"], Vars.M)
                     elif selected_criterion == "Criterion 2":
                         solution = cm.first.criterion_2.solve(self.data["processing_times"], self.data["weights"],
                                                               self.data["precedence_graph"],
-                                                              0.8)
+                                                              Vars.target_difference)
 
                 if solution:
                     solutions.append(solution)
@@ -90,7 +95,7 @@ class VisualizationTab(QWidget):
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
-        # If config_window doesn"t exist, assume Linear Model 1
+        # If config_window doesn't exist, assume Linear Model 1
         if configure_button.config_window is None:
             return "Linear Model 1"
 
@@ -108,7 +113,7 @@ class VisualizationTab(QWidget):
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
-        # If config_window doesn"t exist, assume Criterion 1
+        # If config_window doesn't exist, assume Criterion 1
         if configure_button.config_window is None:
             return "Criterion 1"
 
@@ -138,7 +143,7 @@ class VisualizationTab(QWidget):
 
                 # Automatically open and accept the configuration window for default selection
                 self.open_configuration_window(i, "Linear Model 1")
-                configure_button.config_window.accept()
+                configure_button.config_window.accept()  # type: ignore
 
     def show_context_menu(self, pos):
         item = self.tree_widget.itemAt(pos)

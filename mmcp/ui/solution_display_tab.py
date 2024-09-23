@@ -7,6 +7,9 @@ class SolutionDisplayTab(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.save_button = None
+        self.copy_button = None
+        self.text_edit = None
         self.init_ui()
 
     def init_ui(self):
@@ -16,11 +19,11 @@ class SolutionDisplayTab(QWidget):
 
         self.copy_button = QPushButton("Copy to Clipboard", self)
         self.copy_button.setGeometry(20, 440, 150, 30)
-        self.copy_button.clicked.connect(self.copy_to_clipboard)
+        self.copy_button.clicked.connect(self.copy_to_clipboard)  # type: ignore
 
         self.save_button = QPushButton("Save to .mmcp file", self)
         self.save_button.setGeometry(200, 440, 150, 30)
-        self.save_button.clicked.connect(self.save_to_file)
+        self.save_button.clicked.connect(self.save_to_file)  # type: ignore
 
     def display_solution(self, solution_data):
         """

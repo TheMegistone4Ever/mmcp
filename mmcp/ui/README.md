@@ -6,8 +6,8 @@ project.
 ## Integration with Existing Project
 
 1. **Place this script (`ui.py`) in your project directory.**
-2. **Ensure the necessary imports are correct.** You might need to adjust import paths based on your project structure (
-   e.g., `from mmcp.data import mmcp_parser`).
+2. **Ensure the necessary imports are correct.** You might need to adjust import paths based on your project structure
+   (e.g., `from mmcp.data import mmcp_parser`).
 
 ## Running the Interface
 
@@ -37,8 +37,8 @@ project.
 ## Notes
 
 - The `README` provides basic instructions. You can expand it with more specific details about your project and models.
-- The UI is designed to be flexible. You can easily add more models and functionality by extending the
-  `ModelSelectionTab` and `ResultsExportTab` classes.
+- The UI is designed to be flexible.
+  You can add more models and functionality by extending the `ModelSelectionTab` and `ResultsExportTab` classes.
 - Ensure that the parser logic (`mmcp_parser`) and model solver functions in your project are correctly implemented.
 - Implement the clipboard copying logic in `ResultsExportTab.copy_results_to_clipboard`.
 - Add detailed model descriptions in `ModelSelectionTab.handle_model_tree_click`.

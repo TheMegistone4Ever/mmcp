@@ -9,8 +9,8 @@ def solve_connected_model(c_list, A_list, b_list, d_list, model_types, beta):
         c_list: List of coefficient vectors for the objective functions of each element.
         A_list: List of constraint matrices for each element.
         b_list: List of constraint bound vectors for each element.
-        d_list: List of private resource vectors for each element (None if element uses the first linear model).
-        model_types: List indicating the type of model for each element (1 for first linear model, 2 for second).
+        d_list: List of private resource vectors for each element (None if an element uses the first linear model).
+        model_types: List indicating the type of model for each element (1 for the first linear model, 2 for the second).
         beta: The parameter controlling the compromise between the center and the elements.
 
     Returns:
@@ -32,7 +32,7 @@ def solve_connected_model(c_list, A_list, b_list, d_list, model_types, beta):
             for k in range(len(x_list[i])):
                 constraint.SetCoefficient(x_list[i][k], A_list[i][j][k])
 
-    # Add connecting constraints (sum of corresponding variables across elements is bounded)
+    # Add connecting constraints (a sum of corresponding variables across elements is bounded)
     for j in range(len(c_list[0])):  # Assuming all elements have the same number of variables
         connecting_constraint = solver.Constraint(0, solver.infinity())  # Adjust bounds as needed
         for i in range(num_elements):

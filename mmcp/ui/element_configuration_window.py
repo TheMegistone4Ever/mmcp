@@ -6,6 +6,10 @@ class ElementConfigurationWindow(QDialog):
     def __init__(self, element_data):
         super().__init__()
 
+        self.criterion_combo = None
+        self.combinatorial_model_radio = None
+        self.linear_model_2_radio = None
+        self.linear_model_1_radio = None
         self.setWindowTitle("Element Configuration")
         self.element_data = element_data
 
@@ -48,8 +52,8 @@ class ElementConfigurationWindow(QDialog):
             layout.addWidget(edit)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
+        button_box.accepted.connect(self.accept)  # type: ignore
+        button_box.rejected.connect(self.reject)  # type: ignore
         layout.addWidget(button_box)
 
     def set_model_type(self, model_type):

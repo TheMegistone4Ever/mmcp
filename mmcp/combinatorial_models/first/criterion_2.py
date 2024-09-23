@@ -16,9 +16,9 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
     Returns:
         A list of job completion times (approximation).
     """
+
     num_jobs = len(processing_times)
     weights = initial_weights.copy()
-    tolerance = 1e-6  # Tolerance for convergence
     completion_times = None
 
     for _ in range(num_jobs):  # Limit iterations
@@ -30,17 +30,17 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
             if diff > max_diff:
                 max_diff = diff
 
-        if max_diff < tolerance:
+        if max_diff < Vars.tolerance:
             break
 
         # Adjust weights based on differences (example logic)
         for i, j, target_diff in target_differences:
             if completion_times[i] - completion_times[j] > target_diff:
-                weights[i] -= 0.1  # Decrease weight for a job i
-                weights[j] += 0.1  # Increase weight for a job j
+                weights[i] -= Vars.dW  # Decrease weight for a job i
+                weights[j] += Vars.dW  # Increase weight for a job j
             else:
-                weights[i] += 0.1
-                weights[j] -= 0.1
+                weights[i] += Vars.dW
+                weights[j] -= Vars.dW
 
     return completion_times
 
@@ -48,7 +48,17 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
 def solve_weighted_completion_time(processing_times, precedence_graph, weights, M):
     """
     Helper function: Solves the weighted completion time problem using LP relaxation (similar to Criterion 1).
+
+    Args:
+        processing_times: A list of processing times for each job.
+        precedence_graph: A dictionary representing the precedence graph (key: job, value: list of predecessors).
+        weights: A list of weights for each job.
+        M: A large constant.
+
+    Returns:
+        A list of job completion times (approximation).
     """
+
     num_jobs = len(processing_times)
     solver = pywraplp.Solver.CreateSolver("GLOP")
     completion_times = [solver.NumVar(0, solver.infinity(), f"C_{j}") for j in range(num_jobs)]

@@ -4,7 +4,14 @@ import yaml
 
 # noinspection PyDictCreation
 def generate_mmcp_file(filename, num_elements=5, num_vars=10, num_jobs=10):
-    """Generates an example MMCF file (YAML wrapper) with synthetic data."""
+    """Generates an example MMCF file (YAML wrapper) with synthetic data.
+
+    Args:
+        filename (str): The name of the file to write.
+        num_elements (int): The number of elements in the MMCF file.
+        num_vars (int): The number of variables in each element.
+        num_jobs (int): The number of jobs in the combinatorial model.
+    """
 
     data = {
         "c_list": [np.random.rand(num_vars).tolist() for _ in range(num_elements)],

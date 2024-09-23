@@ -24,7 +24,7 @@ def generate_linear_model_data(num_elements=5, num_vars=50):
     c_list = [np.random.rand(num_vars) for _ in range(num_elements)]
     A_list = [np.random.rand(num_vars, num_vars) for _ in range(num_elements)]
     b_list = [np.random.rand(num_vars) for _ in range(num_elements)]
-    d_list = [np.random.rand(num_vars) if np.random.rand() < 0.5 else None for _ in range(num_elements)]
+    d_list = [np.random.rand(num_vars) if np.random.rand() < .5 else None for _ in range(num_elements)]
     model_types = [1 if d_list[i] is None else 2 for i in range(num_elements)]
 
     return c_list, A_list, b_list, d_list, model_types

@@ -19,6 +19,10 @@ class VisualizationTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """
+        Initializes the UI for the visualization tab.
+        """
+
         self.dmc_label = QLabel("DMC (Decision Making Center)", self)
         self.dmc_label.setAlignment(Qt.AlignCenter)
         self.dmc_label.setGeometry(200, 20, 200, 30)
@@ -39,6 +43,11 @@ class VisualizationTab(QWidget):
         # self.solve_button.setEnabled(False)  # No need to disable initially
 
     def solve(self):
+        """
+        Solves the optimization problem for each element in the data.
+        Displays the solution in the SolutionDisplayTab.
+        """
+
         try:
             solutions = []
             for i in range(len(self.data["c_list"])):
@@ -92,6 +101,16 @@ class VisualizationTab(QWidget):
             print(f"Error: {e}")
 
     def get_selected_model(self, element_index):
+        """
+        Get the selected model type for the given element index.
+
+        Args:
+            element_index: The index of the element.
+
+        Returns:
+            The selected model type.
+        """
+
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
@@ -110,6 +129,16 @@ class VisualizationTab(QWidget):
             return None
 
     def get_selected_criterion(self, element_index):
+        """
+        Get the selected criterion for the given element index.
+
+        Args:
+            element_index: The index of the element.
+
+        Returns:
+            The selected criterion.
+        """
+
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
@@ -121,10 +150,21 @@ class VisualizationTab(QWidget):
         return config_window.criterion_combo.currentText()
 
     def set_data(self, data):
+        """
+        Sets the data for visualization.
+
+        Args:
+            data: The data to be visualized.
+        """
+
         self.data = data
         self.populate_tree()
 
     def populate_tree(self):
+        """
+        Populates the tree widget with the data.
+        """
+
         self.tree_widget.clear()
         # self.solve_button.setEnabled(False)  # No need to disable
 
@@ -146,6 +186,13 @@ class VisualizationTab(QWidget):
                 configure_button.config_window.accept()  # type: ignore
 
     def show_context_menu(self, pos):
+        """
+        Shows a context menu for the tree widget items.
+
+        Args:
+            pos: The position of the context menu.
+        """
+
         item = self.tree_widget.itemAt(pos)
         if item:
             element_index = self.tree_widget.indexOfTopLevelItem(item)
@@ -166,6 +213,14 @@ class VisualizationTab(QWidget):
                 self.open_configuration_window(element_index, "Combinatorial Model")
 
     def open_configuration_window(self, element_index, model_type):
+        """
+        Opens the configuration window for the specified element index and model type.
+
+        Args:
+            element_index: The index of the element.
+            model_type: The model type to set.
+        """
+
         element_data = {}
         for key, value in self.data.items():
             if isinstance(value, list) and len(value) > element_index:

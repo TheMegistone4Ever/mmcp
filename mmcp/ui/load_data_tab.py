@@ -17,6 +17,10 @@ class LoadDataTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """
+        Initializes the UI for the load data tab.
+        """
+
         self.label = QLabel("Load .mmcp file:", self)
         self.label.move(20, 20)
 
@@ -25,6 +29,11 @@ class LoadDataTab(QWidget):
         self.load_button.clicked.connect(self.browse_file)  # type: ignore
 
     def browse_file(self):
+        """
+        Opens a file dialog to browse for a .mmcp file.
+        Emits the data_loaded signal if the file is successfully loaded.
+        """
+
         options = QFileDialog.Options()
         filename, _ = QFileDialog.getOpenFileName(self, "Load .mmcp File", "", "MMCP Files (*.mmcp);;All Files (*)",
                                                   options=options)

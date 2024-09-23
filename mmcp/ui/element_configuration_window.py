@@ -4,6 +4,10 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButt
 
 class ElementConfigurationWindow(QDialog):
     def __init__(self, element_data):
+        """
+        Initializes the element configuration window.
+        """
+
         super().__init__()
 
         self.criterion_combo = None
@@ -16,6 +20,10 @@ class ElementConfigurationWindow(QDialog):
         self.init_ui()
 
     def init_ui(self):
+        """
+        Initializes the UI for the element configuration window.
+        """
+
         layout = QVBoxLayout(self)
 
         # Model selection
@@ -59,7 +67,11 @@ class ElementConfigurationWindow(QDialog):
     def set_model_type(self, model_type):
         """
         Sets the model type and updates the available criteria.
+
+        Args:
+            model_type: The model type to set.
         """
+
         if model_type == "Linear Model 1":
             self.linear_model_1_radio.setChecked(True)
             self.criterion_combo.clear()

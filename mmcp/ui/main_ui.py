@@ -26,6 +26,10 @@ class MainWindow(QMainWindow):
         self.load_data_tab.data_loaded.connect(self.handle_data_loaded)
 
     def handle_data_loaded(self, data):
+        """
+        Handle the data loaded signal from the LoadDataTab.
+        """
+
         self.visualization_tab.set_data(data)
         self.tab_widget.setCurrentIndex(1)  # Switch to Visualization tab
 

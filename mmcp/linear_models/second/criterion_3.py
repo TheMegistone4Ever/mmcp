@@ -58,6 +58,17 @@ def solve(c, A, b, d, weights):
 
 
 def update_weights(weights, x):
+    """
+    Update the weights based on the current solution.
+
+    Args:
+        weights: Vector of weights representing the importance of each element.
+        x: Vector of decision variables.
+
+    Returns:
+        Updated weights.
+    """
+
     # Update weights based on the current solution
     weights = [w * xi.solution_value() for w, xi in zip(weights, x)]
 

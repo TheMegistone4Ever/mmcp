@@ -13,6 +13,10 @@ class SolutionDisplayTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """
+        Initializes the UI for the solution display tab.
+        """
+
         self.text_edit = QTextEdit(self)
         self.text_edit.setGeometry(20, 20, 760, 400)
         self.text_edit.setReadOnly(True)
@@ -32,6 +36,7 @@ class SolutionDisplayTab(QWidget):
         Args:
             solution_data: A dictionary or list containing the solution data.
         """
+
         formatted_solution = ""
         if isinstance(solution_data, dict):
             for key, value in solution_data.items():
@@ -48,12 +53,14 @@ class SolutionDisplayTab(QWidget):
         """
         Displays a message indicating that no optimal solution was found.
         """
+
         self.text_edit.setPlainText("No optimal solution found. Please check your input data.")
 
     def copy_to_clipboard(self):
         """
         Copies the content of the QTextEdit to the clipboard.
         """
+
         self.text_edit.selectAll()
         self.text_edit.copy()
 
@@ -61,6 +68,7 @@ class SolutionDisplayTab(QWidget):
         """
         Saves the content of the QTextEdit to a .mmcp file.
         """
+
         options = QFileDialog.Options()
         filename, _ = QFileDialog.getSaveFileName(self, "Save Solution", "solution.mmcp", "MMCP Files (*.mmcp)",
                                                   options=options)

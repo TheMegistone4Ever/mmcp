@@ -3,7 +3,16 @@ import yaml
 
 
 def numpy_array_representer(dumper, data):
-    """Representer for NumPy arrays."""
+    """Representer for NumPy arrays to YAML.
+
+    Args:
+        dumper: The YAML dumper.
+        data: The NumPy array to represent.
+
+    Returns:
+        The representation of the NumPy array.
+    """
+
     return dumper.represent_list(data.tolist())
 
 
@@ -11,7 +20,16 @@ yaml.add_representer(np.ndarray, numpy_array_representer)
 
 
 def numpy_array_constructor(loader, node):
-    """Constructor for NumPy arrays from YAML."""
+    """Constructor for NumPy arrays from YAML.
+
+    Args:
+        loader: The YAML loader.
+        node: The YAML node.
+
+    Returns:
+        The NumPy array constructed from the node.
+    """
+
     value = loader.construct_sequence(node)
     return np.array(value)
 

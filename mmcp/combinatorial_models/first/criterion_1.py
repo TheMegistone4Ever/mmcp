@@ -14,6 +14,7 @@ def solve(processing_times, precedence_graph, weights, M):
     Returns:
         A list of job completion times (approximation).
     """
+
     num_jobs = len(processing_times)
     solver = pywraplp.Solver.CreateSolver("GLOP")
 

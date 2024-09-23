@@ -18,10 +18,10 @@ def solve(c, A, b, d, M):
             - The optimal objective value.
     """
 
-    solver = pywraplp.Solver.CreateSolver('GLOP')
+    solver = pywraplp.Solver.CreateSolver("GLOP")
 
     num_vars = len(c)
-    x = [solver.NumVar(0, solver.infinity(), f'x_{i}') for i in range(num_vars)]
+    x = [solver.NumVar(0, solver.infinity(), f"x_{i}") for i in range(num_vars)]
 
     # Add constraints
     for i in range(len(b)):

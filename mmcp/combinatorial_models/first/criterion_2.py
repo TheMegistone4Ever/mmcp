@@ -48,8 +48,8 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
     Helper function: Solves the weighted completion time problem using LP relaxation (similar to Criterion 1).
     """
     num_jobs = len(processing_times)
-    solver = pywraplp.Solver.CreateSolver('GLOP')
-    completion_times = [solver.NumVar(0, solver.infinity(), f'C_{j}') for j in range(num_jobs)]
+    solver = pywraplp.Solver.CreateSolver("GLOP")
+    completion_times = [solver.NumVar(0, solver.infinity(), f"C_{j}") for j in range(num_jobs)]
 
     # Precedence constraints
     for j in range(num_jobs):
@@ -60,9 +60,9 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
     for j in range(num_jobs):
         for k in range(j + 1, num_jobs):
             solver.Add(completion_times[j] >= completion_times[k] + processing_times[j] - M * (
-                    1 - solver.IntVar(0, 1, f'y_{j}_{k}')))
+                    1 - solver.IntVar(0, 1, f"y_{j}_{k}")))
             solver.Add(completion_times[k] >= completion_times[j] + processing_times[k] - M * solver.IntVar(0, 1,
-                                                                                                            f'y_{j}_{k}'))
+                                                                                                            f"y_{j}_{k}"))
 
     # Objective: Minimize weighted completion times
     objective = solver.Objective()

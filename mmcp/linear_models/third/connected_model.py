@@ -17,13 +17,13 @@ def solve_connected_model(c_list, A_list, b_list, d_list, model_types, beta):
         A list of optimal solution vectors for each element.
     """
 
-    solver = pywraplp.Solver.CreateSolver('GLOP')
+    solver = pywraplp.Solver.CreateSolver("GLOP")
 
     num_elements = len(c_list)
     x_list = []
     for i in range(num_elements):
         num_vars = len(c_list[i])
-        x_list.append([solver.NumVar(0, solver.infinity(), f'x_{i}_{j}') for j in range(num_vars)])
+        x_list.append([solver.NumVar(0, solver.infinity(), f"x_{i}_{j}") for j in range(num_vars)])
 
     # Add constraints for each element
     for i in range(num_elements):

@@ -16,7 +16,7 @@ def numpy_array_constructor(loader, node):
     return np.array(value)
 
 
-yaml.add_constructor('tag:yaml.org,2002:python/object/apply:numpy.ndarray', numpy_array_constructor)
+yaml.add_constructor("tag:yaml.org,2002:python/object/apply:numpy.ndarray", numpy_array_constructor)
 
 
 def parse_mmcp_file(filename):
@@ -30,7 +30,7 @@ def parse_mmcp_file(filename):
         A dictionary containing the parsed data.
     """
 
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         try:
             data = yaml.safe_load(f)
         except yaml.YAMLError as e:
@@ -38,3 +38,8 @@ def parse_mmcp_file(filename):
             return {}
 
     return data
+
+
+if __name__ == "__main__":
+    result = parse_mmcp_file("../ui/example.mmcp")
+    print(result)

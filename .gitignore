@@ -1,6 +1,6 @@
 # User-defined files and directories
 docs/
-*.mmcp
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,9 +1,10 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QLineEdit, \
-    QMessageBox, QMenu
+from PyQt5.QtWidgets import (QWidget, QLabel, QComboBox, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QLineEdit,
+                             QMessageBox, QMenu)
 
-from mmcp import lm, cm, Vars
-from .element_configuration_window import ElementConfigurationWindow
+from mmcp import lm, cm
+from mmcp.ui import ElementConfigurationWindow
+from mmcp.utils import Vars
 
 
 class VisualizationTab(QWidget):
@@ -170,6 +171,9 @@ class VisualizationTab(QWidget):
         num_elements = len(self.c)
         self.elements_to_display_combo.addItems(list(map(str, range(2, num_elements + 1))))
         self.elements_to_display_combo.setCurrentIndex(num_elements - 1)  # Set default to max value
+
+        save_filename = f"sol_{"x".join(map(str, self.A.shape))}_{"m".join(map(str, self.model_types))}"
+        self.solution_display_tab.set_filename(save_filename)
 
         self.populate_tree()
 

@@ -1,6 +1,6 @@
 from ortools.linear_solver import pywraplp
 
-from ...utils import Vars
+from mmcp.utils import Vars
 
 
 def solve(processing_times, precedence_graph, initial_weights, target_differences):

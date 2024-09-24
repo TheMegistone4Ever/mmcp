@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QHBoxLayout, QComboBox, \
-    QRadioButton
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QHBoxLayout, QComboBox,
+                             QRadioButton)
 
 
 class ElementConfigurationWindow(QDialog):

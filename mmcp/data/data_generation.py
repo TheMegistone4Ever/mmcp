@@ -1,7 +1,8 @@
-import numpy as np
+from numpy import set_printoptions, array, arange
+from numpy.random import seed, rand, randint, choice
 
-np.set_printoptions(precision=2, suppress=True)
-np.random.seed(1810)
+set_printoptions(precision=2, suppress=True)
+seed(1810)
 
 
 def generate_linear_model_data(num_elements=5, num_vars=50) -> dict:
@@ -21,14 +22,14 @@ def generate_linear_model_data(num_elements=5, num_vars=50) -> dict:
             - model_types: A list of model types (1 for linear model 1, 2 for linear model 2).
     """
 
-    d = [np.random.rand(num_vars) if np.random.rand() < .5 else None for _ in range(num_elements)]
+    d = [rand(num_vars) if rand() < .5 else None for _ in range(num_elements)]
 
     return {
-        "c": np.random.rand(num_elements, num_vars),
-        "A": np.random.rand(num_elements, num_vars, num_vars),  # TODO: MAYBE ERROR
-        "b": np.random.rand(num_elements, num_vars),
+        "c": rand(num_elements, num_vars),
+        "A": rand(num_elements, num_vars, num_vars),
+        "b": rand(num_elements, num_vars),
         "d": d,
-        "model_types": np.array([1 if d[i] is None else 2 for i in range(num_elements)]),
+        "model_types": array([1 if d[i] is None else 2 for i in range(num_elements)]),
     }
 
 
@@ -48,10 +49,10 @@ def generate_combinatorial_model_data(num_vars=50, num_jobs=50) -> dict:
     """
 
     return {
-        "processing_times": np.random.randint(1, num_jobs, num_vars),
+        "processing_times": randint(1, num_jobs, num_vars),
         "precedence_graph": {
-            j: np.random.choice(np.arange(j), size=np.random.randint(0, min(j, 5)), replace=False)
+            j: choice(arange(j), size=randint(0, min(j, 5)), replace=False)
             for j in range(1, num_vars)
         },
-        "weights": np.random.rand(num_vars, num_jobs),
+        "weights": rand(num_vars, num_jobs),
     }

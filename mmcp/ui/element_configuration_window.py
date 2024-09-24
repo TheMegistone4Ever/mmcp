@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButt
 
 
 class ElementConfigurationWindow(QDialog):
-    def __init__(self, element_data):
+    def __init__(self, element_data, element_index):
         """
         Initializes the element configuration window.
         """
@@ -14,8 +14,9 @@ class ElementConfigurationWindow(QDialog):
         self.combinatorial_model_radio = None
         self.linear_model_2_radio = None
         self.linear_model_1_radio = None
-        self.setWindowTitle("Element Configuration")
+        self.setWindowTitle(f"Element {element_index + 1} Configuration")
         self.element_data = element_data
+        self.element_index = element_index
 
         self.init_ui()
 

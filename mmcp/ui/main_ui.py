@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
 
         self.load_data_tab = LoadDataTab()
         self.solution_display_tab = SolutionDisplayTab()
-        self.visualization_tab = VisualizationTab(self.solution_display_tab)
+        self.visualization_tab = VisualizationTab(self.tab_widget, self.solution_display_tab)
 
         self.tab_widget.addTab(self.load_data_tab, "Load Data")
         self.tab_widget.addTab(self.visualization_tab, "Visualization")

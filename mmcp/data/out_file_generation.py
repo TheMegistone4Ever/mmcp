@@ -3,10 +3,10 @@ import json
 
 import numpy as np
 
-from data_generation import generate_linear_model_data, generate_combinatorial_model_data
+from .data_generation import generate_linear_model_data, generate_combinatorial_model_data
 
 
-def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10):
+def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, data=None):
     """Generates a data file (JSON wrapper) with synthetic data.
 
     Args:
@@ -14,12 +14,14 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10):
         num_elements (int): The number of elements.
         num_vars (int): The number of variables in each element.
         num_jobs (int): The number of jobs.
+        data (dict): The data to write to the file. If None, synthetic data will be generated.
     """
 
-    data = {
-        **generate_linear_model_data(num_elements, num_vars),
-        **generate_combinatorial_model_data(num_vars, num_jobs)
-    }
+    if data is None:
+        data = {
+            **generate_linear_model_data(num_elements, num_vars),
+            **generate_combinatorial_model_data(num_vars, num_jobs)
+        }
 
     # Convert numpy arrays to list for JSON serialization
     for key, value in data.items():

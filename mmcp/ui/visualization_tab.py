@@ -7,14 +7,23 @@ from .element_configuration_window import ElementConfigurationWindow
 
 
 class VisualizationTab(QWidget):
-    def __init__(self, solution_display_tab):
+    def __init__(self, tab_widget, solution_display_tab):
+        """
+        Initializes the VisualizationTab.
+        """
+
         super().__init__()
+
+        self.tab_widget = tab_widget
+        self.solution_display_tab = solution_display_tab
+
         self.solve_button = None
         self.tree_widget = None
-        self.dimension_combo = None
+        self.elements_to_display_combo = None  # Renamed for clarity
         self.dmc_label = None
         self.data = None
-        self.solution_display_tab = solution_display_tab
+        self.c, self.A, self.b, self.d = None, None, None, None
+        self.model_types, self.processing_times, self.weights, self.precedence_graph = None, None, None, None
 
         self.init_ui()
 
@@ -27,9 +36,9 @@ class VisualizationTab(QWidget):
         self.dmc_label.setAlignment(Qt.AlignCenter)
         self.dmc_label.setGeometry(200, 20, 200, 30)
 
-        self.dimension_combo = QComboBox(self)
-        self.dimension_combo.setGeometry(420, 20, 80, 30)
-        self.dimension_combo.addItems(["2", "3", "4", "5"])
+        self.elements_to_display_combo = QComboBox(self)  # Renamed
+        self.elements_to_display_combo.setGeometry(420, 20, 80, 30)
+        self.elements_to_display_combo.currentIndexChanged.connect(self.on_elements_to_display_changed)  # type: ignore
 
         self.tree_widget = QTreeWidget(self)
         self.tree_widget.setGeometry(50, 70, 700, 400)
@@ -40,7 +49,6 @@ class VisualizationTab(QWidget):
         self.solve_button = QPushButton("Solve", self)
         self.solve_button.setGeometry(350, 480, 100, 30)
         self.solve_button.clicked.connect(self.solve)  # type: ignore
-        # self.solve_button.setEnabled(False)  # No need to disable initially
 
     def solve(self):
         """
@@ -48,44 +56,37 @@ class VisualizationTab(QWidget):
         Displays the solution in the SolutionDisplayTab.
         """
 
+        num_elements = self.get_num_elements_to_display()  # Use the helper method
+
         try:
             solutions = []
-            for i in range(len(self.data["c_list"])):
+            for i in range(num_elements):
                 selected_model = self.get_selected_model(i)
                 selected_criterion = self.get_selected_criterion(i)
 
                 solution = None
                 if selected_model == "Linear Model 1":
                     if selected_criterion == "Criterion 1":
-                        solution = lm.first.criterion_1.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                              self.data["b_list"][i], Vars.M)
+                        solution = lm.first.criterion_1.solve(self.c[i], self.A[i], self.b[i], Vars.M)
                     elif selected_criterion == "Criterion 2":
-                        solution = lm.first.criterion_2.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                              self.data["b_list"][i], Vars.z_min, Vars.alpha)
+                        solution = lm.first.criterion_2.solve(self.c[i], self.A[i], self.b[i], Vars.z_min, Vars.alpha)
                     elif selected_criterion == "Criterion 3":
-                        solution = lm.first.criterion_3.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                              self.data["b_list"][i], Vars.weights)
+                        solution = lm.first.criterion_3.solve(self.c[i], self.A[i], self.b[i], Vars.weights)
                 elif selected_model == "Linear Model 2":
                     if selected_criterion == "Criterion 1":
-                        solution = lm.second.criterion_1.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                               self.data["b_list"][i],
-                                                               self.data["d_list"][i], Vars.M)
+                        solution = lm.second.criterion_1.solve(self.c[i], self.A[i], self.b[i], self.d[i], Vars.M)
                     elif selected_criterion == "Criterion 2":
-                        solution = lm.second.criterion_2.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                               self.data["b_list"][i],
-                                                               self.data["d_list"][i], Vars.z_min, Vars.alpha)
+                        solution = lm.second.criterion_2.solve(self.c[i], self.A[i], self.b[i], self.d[i], Vars.z_min,
+                                                               Vars.alpha)
                     elif selected_criterion == "Criterion 3":
-                        solution = lm.second.criterion_3.solve(self.data["c_list"][i], self.data["A_list"][i],
-                                                               self.data["b_list"][i],
-                                                               self.data["d_list"][i], Vars.weights)
+                        solution = lm.second.criterion_3.solve(self.c[i], self.A[i], self.b[i], self.d[i], Vars.weights)
                 elif selected_model == "Combinatorial Model":
                     if selected_criterion == "Criterion 1":
-                        solution = cm.first.criterion_1.solve(self.data["processing_times"], self.data["weights"],
-                                                              self.data["precedence_graph"], Vars.M)
+                        solution = cm.first.criterion_1.solve(self.processing_times, self.weights,
+                                                              self.precedence_graph, Vars.M)
                     elif selected_criterion == "Criterion 2":
-                        solution = cm.first.criterion_2.solve(self.data["processing_times"], self.data["weights"],
-                                                              self.data["precedence_graph"],
-                                                              Vars.target_difference)
+                        solution = cm.first.criterion_2.solve(self.processing_times, self.weights,
+                                                              self.precedence_graph, Vars.target_difference)
 
                 if solution:
                     solutions.append(solution)
@@ -96,6 +97,9 @@ class VisualizationTab(QWidget):
                 self.solution_display_tab.display_solution(solutions)
             else:
                 self.solution_display_tab.display_no_solution_message()
+
+            self.tab_widget.setCurrentIndex(2)
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {e}")
             print(f"Error: {e}")
@@ -157,7 +161,16 @@ class VisualizationTab(QWidget):
             data: The data to be visualized.
         """
 
+        # TODO: replace with class: Data (extends @dataclass)
         self.data = data
+        self.c, self.A, self.b, self.d, self.model_types, self.processing_times, self.weights, self.precedence_graph = \
+            data["c"], data["A"], data["b"], data["d"], data["model_types"], data["processing_times"], \
+                data["weights"], data["precedence_graph"]
+
+        num_elements = len(self.c)
+        self.elements_to_display_combo.addItems(list(map(str, range(2, num_elements + 1))))
+        self.elements_to_display_combo.setCurrentIndex(num_elements - 1)  # Set default to max value
+
         self.populate_tree()
 
     def populate_tree(self):
@@ -166,24 +179,19 @@ class VisualizationTab(QWidget):
         """
 
         self.tree_widget.clear()
-        # self.solve_button.setEnabled(False)  # No need to disable
 
         if self.data:
-            num_elements = len(self.data["c_list"])
-            for i in range(num_elements):
+            num_elements_to_display = self.get_num_elements_to_display()
+            for i in range(num_elements_to_display):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
 
                 for key, value in self.data.items():
-                    if isinstance(value, list) and len(value) > i:
-                        QTreeWidgetItem(element_item, [f"{key}: {value[i]}"])
+                    if len(value) > i:
+                        QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
 
                 configure_button = QPushButton("Configure", self.tree_widget)
-                configure_button.config_window = None  # Create a config window for each element
+                configure_button.config_window = None
                 self.tree_widget.setItemWidget(element_item, 1, configure_button)
-
-                # Automatically open and accept the configuration window for default selection
-                self.open_configuration_window(i, "Linear Model 1")
-                configure_button.config_window.accept()  # type: ignore
 
     def show_context_menu(self, pos):
         """
@@ -195,10 +203,14 @@ class VisualizationTab(QWidget):
 
         item = self.tree_widget.itemAt(pos)
         if item:
+            # Traverse up to the top-level item
+            while item.parent() is not None:
+                item = item.parent()
+
             element_index = self.tree_widget.indexOfTopLevelItem(item)
 
             menu = QMenu(self)
-
+            show_action = menu.addAction("Show")
             linear_model_1_action = menu.addAction("Linear Model 1")
             linear_model_2_action = menu.addAction("Linear Model 2")
             combinatorial_model_action = menu.addAction("Combinatorial Model")
@@ -211,6 +223,8 @@ class VisualizationTab(QWidget):
                 self.open_configuration_window(element_index, "Linear Model 2")
             elif action == combinatorial_model_action:
                 self.open_configuration_window(element_index, "Combinatorial Model")
+            else:
+                self.open_configuration_window(element_index, None)
 
     def open_configuration_window(self, element_index, model_type):
         """
@@ -223,23 +237,33 @@ class VisualizationTab(QWidget):
 
         element_data = {}
         for key, value in self.data.items():
-            if isinstance(value, list) and len(value) > element_index:
-                element_data[key] = value[element_index]
+            if len(value) > element_index:
+                element_data[key] = list(value)[element_index]
 
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
-        if configure_button.config_window is None:
-            config_window = ElementConfigurationWindow(element_data)
-            configure_button.config_window = config_window
+        if not configure_button.config_window:
+            configure_button.config_window = ElementConfigurationWindow(element_data, element_index)
 
-        config_window = configure_button.config_window
-        config_window.set_model_type(model_type)
+        if model_type:
+            configure_button.config_window.set_model_type(model_type)
 
-        if config_window.exec_() == QDialog.Accepted:
-            for edit in config_window.findChildren(QLineEdit):
-                key = edit.objectName()
-                value = edit.text()
-
-                self.data[key] = value
+        if configure_button.config_window.exec_() == QDialog.Accepted:
+            for edit in configure_button.config_window.findChildren(QLineEdit):
+                self.data[edit.objectName()] = edit.text()
             self.populate_tree()
+
+    def on_elements_to_display_changed(self, index):
+        """
+        Handles the event when the elements to display combo box value changes.
+        """
+
+        self.populate_tree()
+
+    def get_num_elements_to_display(self):
+        """
+        Returns the selected number of elements to display from the combo box.
+        """
+
+        return int(txt) if (txt := self.elements_to_display_combo.currentText()) else 0

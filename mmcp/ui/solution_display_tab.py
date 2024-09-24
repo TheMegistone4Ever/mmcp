@@ -1,6 +1,9 @@
 # ui/solution_display_tab.py
 
+import numpy as np
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox
+
+from mmcp import generate_data_json_file
 
 
 class SolutionDisplayTab(QWidget):
@@ -25,7 +28,7 @@ class SolutionDisplayTab(QWidget):
         self.copy_button.setGeometry(20, 440, 150, 30)
         self.copy_button.clicked.connect(self.copy_to_clipboard)  # type: ignore
 
-        self.save_button = QPushButton("Save to .mmcp file", self)
+        self.save_button = QPushButton("Save to .json file", self)
         self.save_button.setGeometry(200, 440, 150, 30)
         self.save_button.clicked.connect(self.save_to_file)  # type: ignore
 
@@ -66,15 +69,29 @@ class SolutionDisplayTab(QWidget):
 
     def save_to_file(self):
         """
-        Saves the content of the QTextEdit to a .mmcp file.
+        Saves the content of the QTextEdit to a .json file.
         """
 
         options = QFileDialog.Options()
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Solution", "solution.mmcp", "MMCP Files (*.mmcp)",
-                                                  options=options)
+        # TODO: Better filename with information from the data (pass filename: str to this method via class constructor)
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Solution", f"solution.json", "JSON Files (*.json)",
+                                                  options=options)  # Updated filter
         if filename:
             try:
-                with open(filename, "w") as f:
-                    f.write(self.text_edit.toPlainText())  # Assuming plain text for now
+                # Assuming you want to save the formatted solution as JSON
+                solution_data = self.get_solution_data_from_text()  # Get the data from QTextEdit
+                generate_data_json_file(filename, data=solution_data)  # Use generate_data_json_file to save
+
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
+
+    def get_solution_data_from_text(self) -> dict:
+        """Extract solution data from the QTextEdit (you might need to adjust this based on your formatting)."""
+        text = self.text_edit.toPlainText()
+        # Example: If your format is "key: value\n", you can parse it like this:
+        solution_data = {}
+        for line in text.splitlines():
+            if ": " in line:
+                key, value = line.split(": ", 1)
+                solution_data[key] = np.array(value)
+        return solution_data

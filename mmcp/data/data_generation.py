@@ -21,11 +21,11 @@ def generate_linear_model_data(num_elements=5, num_vars=50) -> dict:
             - model_types: A list of model types (1 for linear model 1, 2 for linear model 2).
     """
 
-    d = np.array([np.random.rand(num_vars) if np.random.rand() < .5 else None for _ in range(num_elements)])
+    d = [np.random.rand(num_vars) if np.random.rand() < .5 else None for _ in range(num_elements)]
 
     return {
         "c": np.random.rand(num_elements, num_vars),
-        "A": np.random.rand(num_elements, num_vars, num_vars),
+        "A": np.random.rand(num_elements, num_vars, num_vars),  # TODO: MAYBE ERROR
         "b": np.random.rand(num_elements, num_vars),
         "d": d,
         "model_types": np.array([1 if d[i] is None else 2 for i in range(num_elements)]),

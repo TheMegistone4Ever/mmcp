@@ -170,7 +170,7 @@ class VisualizationTab(QWidget):
 
         num_elements = len(self.c)
         self.elements_to_display_combo.addItems(list(map(str, range(2, num_elements + 1))))
-        self.elements_to_display_combo.setCurrentIndex(num_elements - 1)  # Set default to max value
+        self.elements_to_display_combo.setCurrentIndex(self.elements_to_display_combo.count() - 1)
 
         save_filename = f"sol_{"x".join(map(str, self.A.shape))}_{"m".join(map(str, self.model_types))}"
         self.solution_display_tab.set_filename(save_filename)
@@ -214,7 +214,7 @@ class VisualizationTab(QWidget):
             element_index = self.tree_widget.indexOfTopLevelItem(item)
 
             menu = QMenu(self)
-            show_action = menu.addAction("Show")
+            menu.addAction("Show")
             linear_model_1_action = menu.addAction("Linear Model 1")
             linear_model_2_action = menu.addAction("Linear Model 2")
             combinatorial_model_action = menu.addAction("Combinatorial Model")

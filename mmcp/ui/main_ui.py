@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QMessageBox
 
 from mmcp.ui import LoadDataTab, VisualizationTab, SolutionDisplayTab
 
@@ -28,7 +28,14 @@ class MainWindow(QMainWindow):
     def handle_data_loaded(self, data):
         """
         Handle the data loaded signal from the LoadDataTab.
+
+        Args:
+            data: The data loaded from the LoadDataTab.
         """
+
+        if len(data["c"]) < 2:
+            QMessageBox.critical(self, "Error", "At least 2 elements are required.")
+            return
 
         self.visualization_tab.set_data(data)
         self.tab_widget.setCurrentIndex(1)  # Switch to Visualization tab

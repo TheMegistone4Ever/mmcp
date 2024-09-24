@@ -15,7 +15,7 @@ def solve(processing_times, precedence_graph, weights, M):
         A list of job completion times (approximation).
     """
 
-    num_jobs = len(processing_times)
+    num_jobs = len(processing_times) if isinstance(processing_times, list) else 1
     solver = pywraplp.Solver.CreateSolver("GLOP")
 
     # Variables: completion times (continuous relaxation)

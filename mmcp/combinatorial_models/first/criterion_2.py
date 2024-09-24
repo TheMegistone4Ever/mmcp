@@ -1,6 +1,6 @@
 from ortools.linear_solver import pywraplp
 
-from mmcp import Vars
+from ...utils import Vars
 
 
 def solve(processing_times, precedence_graph, initial_weights, target_differences):
@@ -17,7 +17,7 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
         A list of job completion times (approximation).
     """
 
-    num_jobs = len(processing_times)
+    num_jobs = len(processing_times) if isinstance(processing_times, list) else 1
     weights = initial_weights.copy()
     completion_times = None
 

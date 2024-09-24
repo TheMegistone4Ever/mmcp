@@ -1,4 +1,4 @@
-from config import Vars
+from .config import Vars
 
 __all__ = [
     "Vars"

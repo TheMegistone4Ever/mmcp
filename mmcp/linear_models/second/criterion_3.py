@@ -49,7 +49,7 @@ def solve(c, A, b, d, weights):
 
         z_prev = z_current
         # Update weights (implementation depends on the specific update rule)
-        # Example: weights = update_weights(weights, x)
+        weights = update_weights(weights, x)
 
     optimal_x = [x[i].solution_value() for i in range(num_vars)]
     optimal_objective = objective.Value()

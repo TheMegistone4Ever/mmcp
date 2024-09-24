@@ -2,33 +2,26 @@ from mmcp import *
 
 
 def main():
-    # Generate data for linear models
-    c_list, A_list, b_list, d_list, model_types = generate_linear_model_data()
+    linear_data = generate_linear_model_data()
+    combinatorial_data = generate_combinatorial_model_data()
+    first_linear_data = {k: list(v)[0] for k, v in linear_data.items()}
+    first_combinatorial_data = {k: list(v)[0] for k, v in combinatorial_data.items()}
+    first_combinatorial_data["precedence_graph"] = {1: []}
 
-    # Generate data for the combinatorial model
-    processing_times, precedence_graph, weights = generate_combinatorial_model_data()
-
-    # Example: Solve the first criterion for the first linear model for the first element
-    optimal_x, optimal_objective = lm.first.criterion_1.solve(c_list[0], A_list[0], b_list[0], M=1000)
-
-    # Example: Solve the first criterion for the combinatorial model
-    approximate_completion_times = cm.first.criterion_1.solve(
-        processing_times, precedence_graph, weights, M=1000
-    )
-
-    # print input data
-    for name, values in zip(["c_list", "A_list", "b_list", "d_list", "model_types"],
-                            [c_list, A_list, b_list, d_list, model_types]):
+    print("Linear model data for the first element:")
+    for name, values in first_linear_data.items():
         print(f"{name=}:\n{values}\n")
 
-    print("Optimal x for the first criterion of the first linear model:")
-    print(optimal_x)
+    optimal_x, optimal_objective = lm.first.criterion_1.solve(**dict(list(first_linear_data.items())[:3]), M=1000)
+    print(f"Optimal x for the first criterion of the first linear model: {optimal_x}")
+    print(f"Optimal objective value for the first criterion of the first linear model: {optimal_objective}\n")
 
-    print("Optimal objective value for the first criterion of the first linear model:")
-    print(optimal_objective)
+    print("Combinatorial model data for the first element:")
+    for name, values in first_combinatorial_data.items():
+        print(f"{name=}:\n{values}\n")
 
-    print("Approximate completion times for the combinatorial model:")
-    print(approximate_completion_times)
+    approximate_completion_times = cm.first.criterion_1.solve(**first_combinatorial_data, M=1000)
+    print(f"Approximate completion times for the combinatorial model: {approximate_completion_times}")
 
 
 if __name__ == "__main__":

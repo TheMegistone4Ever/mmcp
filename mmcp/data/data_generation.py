@@ -4,7 +4,7 @@ np.set_printoptions(precision=2, suppress=True)
 np.random.seed(1810)
 
 
-def generate_linear_model_data(num_elements=5, num_vars=50):
+def generate_linear_model_data(num_elements=5, num_vars=50) -> dict:
     """
     Generates synthetic data for the linear models.
 
@@ -13,29 +13,32 @@ def generate_linear_model_data(num_elements=5, num_vars=50):
         num_vars: The number of variables for each element.
 
     Returns:
-        A tuple containing lists of data for each element:
-            - c_list: List of coefficient vectors.
-            - A_list: List of constraint matrices.
-            - b_list: List of constraint bound vectors.
-            - d_list: List of private resource vectors (can be None for elements using the first linear model).
-            - model_types: List indicating the type of model for each element (1 or 2).
+        A dictionary containing the generated data:
+            - c: A list of vectors c for each element.
+            - A: A list of matrices A for each element.
+            - b: A list of vectors b for each element.
+            - d: A list of vectors d for each element (None for linear model 1).
+            - model_types: A list of model types (1 for linear model 1, 2 for linear model 2).
     """
 
-    c_list = [np.random.rand(num_vars) for _ in range(num_elements)]
-    A_list = [np.random.rand(num_vars, num_vars) for _ in range(num_elements)]
-    b_list = [np.random.rand(num_vars) for _ in range(num_elements)]
-    d_list = [np.random.rand(num_vars) if np.random.rand() < .5 else None for _ in range(num_elements)]
-    model_types = [1 if d_list[i] is None else 2 for i in range(num_elements)]
+    d = [np.random.rand(num_vars) if np.random.rand() < .5 else None for _ in range(num_elements)]
 
-    return c_list, A_list, b_list, d_list, model_types
+    return {
+        "c": [np.random.rand(num_vars) for _ in range(num_elements)],
+        "A": [np.random.rand(num_vars, num_vars) for _ in range(num_elements)],
+        "b": [np.random.rand(num_vars) for _ in range(num_elements)],
+        "d": d,
+        "model_types": [1 if d[i] is None else 2 for i in range(num_elements)],
+    }
 
 
-def generate_combinatorial_model_data(num_jobs=50):
+def generate_combinatorial_model_data(num_vars=50, num_jobs=50) -> dict:
     """
     Generates synthetic data for the combinatorial model.
 
     Args:
-        num_jobs: The number of jobs.
+        num_vars: The number of variables for the combinatorial model.
+        num_jobs: The number of jobs in the combinatorial model.
 
     Returns:
         A tuple containing:
@@ -44,12 +47,11 @@ def generate_combinatorial_model_data(num_jobs=50):
             - weights: A list of weights for each job.
     """
 
-    processing_times = np.random.randint(1, 10, size=num_jobs)
-    precedence_graph = {}
-    for j in range(1, num_jobs):
-        num_predecessors = np.random.randint(0, min(j, 5))  # Up to 5 predecessors
-        predecessors = np.random.choice(np.arange(j), size=num_predecessors, replace=False)
-        precedence_graph[j] = list(predecessors)
-    weights = np.random.rand(num_jobs)
-
-    return processing_times, precedence_graph, weights
+    return {
+        "processing_times": np.random.randint(1, num_jobs, size=num_vars),
+        "precedence_graph": {
+            j: np.random.choice(np.arange(j), size=np.random.randint(0, min(j, 5)), replace=False)
+            for j in range(1, num_vars)
+        },
+        "weights": [np.random.rand(num_jobs) for _ in range(num_vars)],
+    }

@@ -92,7 +92,6 @@ def parse_data_json_file(filename):
             raise TypeError(type_error("d", "list of numbers (or None)"))
         if not isinstance(data["model_types"], list) or not all(isinstance(item, int) for item in data["model_types"]):
             raise TypeError(type_error("model_types", "list of integers"))
-        print(type(data["processing_times"]))
         if not isinstance(data["processing_times"], list) or not all(
                 isinstance(item, (int, float)) for item in data["processing_times"]):
             raise TypeError(type_error("processing_times", "NumPy array of numbers"))

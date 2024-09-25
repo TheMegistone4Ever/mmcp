@@ -1,10 +1,23 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QLabel, QComboBox, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QLineEdit,
-                             QMessageBox, QMenu)
+from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QLineEdit, QMenu,
+                             QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
 
 from mmcp import lm, cm
 from mmcp.ui import ElementConfigurationWindow
 from mmcp.utils import Vars
+
+model_mapping = {
+    "Linear Model 1": lm.first,
+    "Linear Model 2": lm.second,
+    "Linear Model 3": lm.third,
+    "Combinatorial Model": cm.first,
+}
+
+criterion_mapping = {
+    "Criterion 1": "criterion_1",
+    "Criterion 2": "criterion_2",
+    "Criterion 3": "criterion_3",
+}
 
 
 class VisualizationTab(QWidget):
@@ -15,12 +28,15 @@ class VisualizationTab(QWidget):
 
         super().__init__()
 
+        self.scroll_area = None
         self.tab_widget = tab_widget
         self.solution_display_tab = solution_display_tab
 
+        self.checkbox_layout = None
         self.solve_button = None
         self.tree_widget = None
-        self.elements_to_display_combo = None  # Renamed for clarity
+        self.elements_checkboxes = []
+        self.master_checkbox = None
         self.dmc_label = None
         self.data = None
         self.c, self.A, self.b, self.d = None, None, None, None
@@ -30,26 +46,131 @@ class VisualizationTab(QWidget):
 
     def init_ui(self):
         """
-        Initializes the UI for the visualization tab.
+        Initializes the UI for the visualization tab using a 2x2 grid layout.
         """
 
+        # DMC Label with a modern, flat style
         self.dmc_label = QLabel("DMC (Decision Making Center)", self)
         self.dmc_label.setAlignment(Qt.AlignCenter)
-        self.dmc_label.setGeometry(200, 20, 200, 30)
+        self.dmc_label.setStyleSheet("""
+            font-size: 16px;
+            font-weight: bold;
+            color: #2E8BC0;  /* Chrome-like Blue */
+            padding: 10px 0;
+        """)
 
-        self.elements_to_display_combo = QComboBox(self)  # Renamed
-        self.elements_to_display_combo.setGeometry(420, 20, 80, 30)
-        self.elements_to_display_combo.currentIndexChanged.connect(self.on_elements_to_display_changed)  # type: ignore
+        # Solve Button with Material Design style
+        self.solve_button = QPushButton("Solve", self)
+        self.solve_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;  /* Flat Green */
+                color: white;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 20px;  /* Rounded corners for Chrome style */
+                border: none;  /* No borders for flat look */
+                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+            }
+            QPushButton:hover {
+                background-color: #45A049;  /* Slightly darker green on hover */
+                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);  /* Stronger shadow on hover */
+            }
+            QPushButton:pressed {
+                background-color: #3D8C43;  /* Darker shade for press */
+            }
+        """)
+        self.solve_button.setCursor(Qt.PointingHandCursor)
+        self.solve_button.clicked.connect(self.solve)  # type: ignore
 
+        # Tree Widget styled with a flat, modern look
         self.tree_widget = QTreeWidget(self)
-        self.tree_widget.setGeometry(50, 70, 700, 400)
         self.tree_widget.setHeaderLabels(["Elements"])
+        self.tree_widget.setStyleSheet("""
+            QTreeWidget {
+                background-color: #FFFFFF;  /* Flat white background */
+                border: 1px solid #E0E0E0;  /* Light gray border */
+                border-radius: 10px;  /* Slightly rounded edges */
+            }
+            QTreeWidget::item {
+                padding: 8px;
+            }
+            QHeaderView::section {
+                background-color: #2E8BC0;  /* Blue header background */
+                color: white;
+                font-weight: bold;
+                padding: 8px;
+                border: none;  /* Remove border for cleaner look */
+            }
+        """)
         self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree_widget.customContextMenuRequested.connect(self.show_context_menu)  # type: ignore
 
-        self.solve_button = QPushButton("Solve", self)
-        self.solve_button.setGeometry(350, 480, 100, 30)
-        self.solve_button.clicked.connect(self.solve)  # type: ignore
+        # --- Main Layout (Grid) ---
+        main_layout = QGridLayout(self)
+
+        # --- Top Row ---
+        # Scroll Area for Checkboxes, with rounded and flat design
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setStyleSheet("""
+            QScrollArea {
+                background-color: #F9F9F9;  /* Light gray background for Chrome-style */
+                border: 1px solid #E0E0E0;  /* Thin light gray border */
+                border-radius: 10px;  /* Slightly rounded corners */
+            }
+            QWidget {
+                background-color: #F9F9F9;  /* Same background for consistency */
+            }
+        """)
+        scroll_widget = QWidget(self.scroll_area)
+        self.scroll_area.setWidget(scroll_widget)
+        self.checkbox_layout = QVBoxLayout(scroll_widget)
+        main_layout.addWidget(self.scroll_area, 0, 0)  # Checkboxes in Row 0, Column 0
+
+        # DMC Label and Button (Row 0, Column 1)
+        top_right_layout = QVBoxLayout()
+        top_right_layout.addWidget(self.dmc_label)
+        top_right_layout.addWidget(self.solve_button)
+        main_layout.addLayout(top_right_layout, 0, 1)
+
+        # --- Bottom Row (Elements List) ---
+        main_layout.addWidget(self.tree_widget, 1, 0, 1, 2)  # Span 2 columns
+
+    def populate_tree(self):
+        """
+        Populates the tree widget with the data and manages checkboxes.
+        """
+
+        self.tree_widget.clear()
+        self.elements_checkboxes.clear()
+        # Remove master_checkbox from layout if it exists
+        if self.master_checkbox is not None:
+            self.checkbox_layout.removeWidget(self.master_checkbox)
+            self.master_checkbox.deleteLater()  # Important: delete the widget
+
+        if self.data:
+            total_elements = len(self.c)
+
+            self.master_checkbox = QCheckBox("Select All", self)
+            self.master_checkbox.setChecked(True)
+            self.master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
+            self.checkbox_layout.addWidget(self.master_checkbox)
+
+            for i in range(total_elements):
+                element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
+                for key, value in self.data.items():
+                    if len(value) > i:
+                        QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
+
+                checkbox = QCheckBox(f"Element {i + 1}", self)
+                checkbox.setChecked(True)
+                checkbox.stateChanged.connect(self.on_element_checkbox_changed)  # type: ignore
+                self.elements_checkboxes.append(checkbox)
+                self.checkbox_layout.addWidget(checkbox)
+
+                configure_button = QPushButton("Configure", self.tree_widget)
+                configure_button.config_window = None
+                self.tree_widget.setItemWidget(element_item, 1, configure_button)
 
     def solve(self):
         """
@@ -57,40 +178,54 @@ class VisualizationTab(QWidget):
         Displays the solution in the SolutionDisplayTab.
         """
 
-        num_elements = self.get_num_elements_to_display()  # Use the helper method
-
         try:
             solutions = []
-            for i in range(num_elements):
+            for i, checkbox in enumerate(self.elements_checkboxes):
+                if not checkbox.isChecked():
+                    continue
+
                 selected_model = self.get_selected_model(i)
                 selected_criterion = self.get_selected_criterion(i)
 
-                solution = None
-                if selected_model == "Linear Model 1":
-                    if selected_criterion == "Criterion 1":
-                        solution = lm.first.criterion_1.solve(self.c[i], self.A[i], self.b[i], Vars.M)
-                    elif selected_criterion == "Criterion 2":
-                        solution = lm.first.criterion_2.solve(self.c[i], self.A[i], self.b[i], Vars.z_min, Vars.alpha)
-                    elif selected_criterion == "Criterion 3":
-                        solution = lm.first.criterion_3.solve(self.c[i], self.A[i], self.b[i], Vars.weights)
-                elif selected_model == "Linear Model 2":
-                    if selected_criterion == "Criterion 1":
-                        solution = lm.second.criterion_1.solve(self.c[i], self.A[i], self.b[i], self.d[i], Vars.M)
-                    elif selected_criterion == "Criterion 2":
-                        solution = lm.second.criterion_2.solve(self.c[i], self.A[i], self.b[i], self.d[i], Vars.z_min,
-                                                               Vars.alpha)
-                    elif selected_criterion == "Criterion 3":
-                        solution = lm.second.criterion_3.solve(self.c[i], self.A[i], self.b[i], self.d[i], Vars.weights)
-                elif selected_model == "Combinatorial Model":
-                    if selected_criterion == "Criterion 1":
-                        solution = cm.first.criterion_1.solve(self.processing_times, self.weights,
-                                                              self.precedence_graph, Vars.M)
-                    elif selected_criterion == "Criterion 2":
-                        solution = cm.first.criterion_2.solve(self.processing_times, self.weights,
-                                                              self.precedence_graph, Vars.target_difference)
+                try:
+                    model_class = model_mapping[selected_model]
+                    criterion_method = getattr(model_class, criterion_mapping[selected_criterion])
+                except KeyError:
+                    QMessageBox.warning(self, "Warning", f"Invalid model or criterion selected for Element {i + 1}.")
+                    continue
+
+                if selected_model.startswith("Linear Model"):
+                    if selected_model == "Linear Model 1":
+                        params = [self.c[i], self.A[i], self.b[i]]
+                        if selected_criterion == "Criterion 1":
+                            params.append(Vars.M)
+                        elif selected_criterion == "Criterion 2":
+                            params.extend([Vars.z_min, Vars.alpha])
+                        elif selected_criterion == "Criterion 3":
+                            params.append(Vars.weights)
+                        solution = criterion_method.solve(*params)
+                    elif selected_model == "Linear Model 2":
+                        params = [self.c[i], self.A[i], self.b[i], self.d[i]]
+                        if selected_criterion == "Criterion 1":
+                            params.append(Vars.M)
+                        elif selected_criterion == "Criterion 2":
+                            params.extend([Vars.z_min, Vars.alpha])
+                        elif selected_criterion == "Criterion 3":
+                            params.append(Vars.weights)
+                        solution = criterion_method.solve(*params)
+                    else:  # Linear Model 3
+                        # TODO: Implement Linear Model 3
+                        # params = [self.c, self.A, self.b, self.d, self.model_types, Vars.beta]
+                        # solution = criterion_method.solve(*params)
+                        raise NotImplementedError("Linear Model 3 is not implemented.")
+                else:  # Combinatorial Model
+                    solution = criterion_method.solve(
+                        self.processing_times, self.weights, self.precedence_graph,
+                        Vars.M if selected_criterion == "Criterion 1" else Vars.target_difference
+                    )
 
                 if solution:
-                    solutions.append(solution)
+                    solutions.append((f"Element {i + 1}", solution))
                 else:
                     QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
 
@@ -168,34 +303,10 @@ class VisualizationTab(QWidget):
             data["c"], data["A"], data["b"], data["d"], data["model_types"], data["processing_times"], \
                 data["weights"], data["precedence_graph"]
 
-        num_elements = len(self.c)
-        self.elements_to_display_combo.addItems(list(map(str, range(2, num_elements + 1))))
-        self.elements_to_display_combo.setCurrentIndex(self.elements_to_display_combo.count() - 1)
-
         save_filename = f"sol_{"x".join(map(str, self.A.shape))}_{"m".join(map(str, self.model_types))}"
         self.solution_display_tab.set_filename(save_filename)
 
         self.populate_tree()
-
-    def populate_tree(self):
-        """
-        Populates the tree widget with the data.
-        """
-
-        self.tree_widget.clear()
-
-        if self.data:
-            num_elements_to_display = self.get_num_elements_to_display()
-            for i in range(num_elements_to_display):
-                element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
-
-                for key, value in self.data.items():
-                    if len(value) > i:
-                        QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
-
-                configure_button = QPushButton("Configure", self.tree_widget)
-                configure_button.config_window = None
-                self.tree_widget.setItemWidget(element_item, 1, configure_button)
 
     def show_context_menu(self, pos):
         """
@@ -256,18 +367,29 @@ class VisualizationTab(QWidget):
         if configure_button.config_window.exec_() == QDialog.Accepted:
             for edit in configure_button.config_window.findChildren(QLineEdit):
                 self.data[edit.objectName()] = edit.text()
-            self.populate_tree()
 
-    def on_elements_to_display_changed(self, index):
+    def on_master_checkbox_changed(self, state):
         """
-        Handles the event when the elements to display combo box value changes.
-        """
+        Handles the primary checkbox state change.
 
-        self.populate_tree()
-
-    def get_num_elements_to_display(self):
-        """
-        Returns the selected number of elements to display from the combo box.
+        Args:
+            state: The state of the primary checkbox.
         """
 
-        return int(txt) if (txt := self.elements_to_display_combo.currentText()) else 0
+        for checkbox in self.elements_checkboxes:
+            if checkbox.text() != "Select All":
+                if checkbox.isChecked() != (state == Qt.Checked):
+                    checkbox.setChecked(state)
+
+    def on_element_checkbox_changed(self, state):
+        """
+        Handles the element checkbox state change.
+
+        Args:
+            state: The state of the element checkbox.
+        """
+
+        num_checked = sum(checkbox.isChecked() for checkbox in self.elements_checkboxes)
+        self.master_checkbox.setCheckState(Qt.Checked if num_checked == len(self.elements_checkboxes)
+                                           else Qt.Unchecked if num_checked == 0 else Qt.PartiallyChecked)
+        print(f"Element checkbox state changed to: {state}, {num_checked = }.")

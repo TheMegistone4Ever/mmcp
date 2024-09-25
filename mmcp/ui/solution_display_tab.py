@@ -45,11 +45,10 @@ class SolutionDisplayTab(QWidget):
             for key, value in solution_data.items():
                 formatted_solution += f"{key}: {value}\n"
         elif isinstance(solution_data, list):
-            for i, item in enumerate(solution_data):
-                formatted_solution += f"Item {i + 1}: {item}\n"
-        else:
-            formatted_solution = str(solution_data)  # Handle other data types
-
+            for message, solution in solution_data:
+                formatted_solution += f"{message}: {solution}\n"
+        else:  # Handle other types of data
+            formatted_solution = repr(solution_data)
         self.text_edit.setPlainText(formatted_solution)
 
     def display_no_solution_message(self):

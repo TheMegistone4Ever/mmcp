@@ -42,8 +42,6 @@ class LoadDataTab(QWidget):
                 data = parse_data_json_file(filename)
                 if data:
                     self.data_loaded.emit(data)  # type: ignore
-                else:
-                    QMessageBox.critical(self, "Error", "Failed to parse .json file. Please check the file format.")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occurred: {e}")  # Display error message
                 print(f"Error: {e}")

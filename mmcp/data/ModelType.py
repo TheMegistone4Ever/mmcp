@@ -9,5 +9,8 @@ class ModelType(Enum):
     def __int__(self):
         return self.value
 
+    def __str__(self):
+        return repr(self)
+
     def __repr__(self):
         return self.name.replace("_", " ").capitalize()

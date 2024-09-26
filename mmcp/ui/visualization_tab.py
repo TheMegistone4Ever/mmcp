@@ -122,7 +122,8 @@ class VisualizationTab(QWidget):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
                 for k, v in self.data._asdict().items():
                     if len(v) > i:
-                        QTreeWidgetItem(element_item, [f"{k}: {ModelType(v[i]) if k == "model_types" else list(v)[i]}"])
+                        QTreeWidgetItem(element_item, [f"{k}: {str(ModelType(v[i]))
+                        if k == "model_types" else list(v)[i]}"])
 
                 checkbox = QCheckBox(f"Element {i + 1}", self)
                 checkbox.setChecked(True)
@@ -325,8 +326,8 @@ class VisualizationTab(QWidget):
             element_item.takeChildren()
             for key, value in self.data._asdict().items():
                 if len(value) > element_index:
-                    QTreeWidgetItem(element_item, [f"{key}: {ModelType(value[element_index]) if key == "model_types"
-                    else list(value)[element_index]}"])
+                    QTreeWidgetItem(element_item, [f"{key}: {str(ModelType(value[element_index]))
+                    if key == "model_types" else list(value)[element_index]}"])
 
     def on_master_checkbox_changed(self, state):
         """

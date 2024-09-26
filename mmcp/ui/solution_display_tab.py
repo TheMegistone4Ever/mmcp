@@ -21,10 +21,6 @@ class SolutionDisplayTab(QWidget):
         """
 
         self.setStyleSheet("""
-            QWidget {
-                background-color: white;
-                font-family: Arial;
-            }
             QTextEdit {
                 border: 1px solid #CCCCCC;
                 padding: 5px;

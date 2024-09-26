@@ -9,13 +9,11 @@ from mmcp.ui import LoadDataTab, VisualizationTab, SolutionDisplayTab
 
 class CustomTabBar(QTabBar):
     def tabSizeHint(self, index):
-        """Override the tab size hint to set a custom width."""
-        # Set a dynamic size based on the current widget size and number of tabs
-        if self.count() == 0:
-            return QSize(0, 50)  # No tabs
-        total_width = self.parent().width()  # Get the width of the parent (QTabWidget)
-        tab_width = total_width // self.count()  # Calculate equal width for each tab
-        return QSize(tab_width, 50)  # Return calculated width and fixed height
+        """
+        Override the tab size hint to set a custom width.
+        Set a dynamic size based on the current widget size and number of tabs.
+        """
+        return QSize(self.parent().width() // self.count(), 50) if self.count() else QSize(0, 50)
 
 
 class MainWindow(QMainWindow):
@@ -29,7 +27,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
         self.tab_widget.setTabsClosable(False)
 
-        # Set the custom tab bar
         self.tab_widget.setTabBar(CustomTabBar())
 
         self.load_data_tab = LoadDataTab()
@@ -84,11 +81,6 @@ class MainWindow(QMainWindow):
 
         self.visualization_tab.set_data(data)
         self.tab_widget.setCurrentIndex(1)  # Switch to Visualization tab
-
-    def resizeEvent(self, event):
-        """Handle resize event to update tab widths."""
-        self.tab_widget.tabBar().update()  # Update the tab bar to reflect size changes
-        super().resizeEvent(event)
 
 
 if __name__ == "__main__":

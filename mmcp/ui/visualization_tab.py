@@ -2,24 +2,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu,
                              QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
 
-from mmcp import lm, cm
-from mmcp.data import ModelData, SolutionData
-from mmcp.data.Data import ModelType
+from mmcp.data import ModelData, SolutionData, ModelType
 from mmcp.ui import ElementConfigurationWindow
-from mmcp.utils import Vars
-
-model_mapping = {
-    "Linear Model 1": lm.first,
-    "Linear Model 2": lm.second,
-    "Linear Model 3": lm.third,
-    "Combinatorial Model": cm.first,
-}
-
-criterion_mapping = {
-    "Criterion 1": "criterion_1",
-    "Criterion 2": "criterion_2",
-    "Criterion 3": "criterion_3",
-}
+from mmcp.utils import Vars, model_mapping, criterion_mapping
 
 
 class VisualizationTab(QWidget):
@@ -81,17 +66,14 @@ class VisualizationTab(QWidget):
             }
         """)
 
-        # DMC Label
         self.dmc_label = QLabel("DMC (Decision Making Center)", self)
         self.dmc_label.setAlignment(Qt.AlignCenter)
         self.dmc_label.setStyleSheet("font-size: 16px; font-weight: bold;")
 
-        # Solve Button
         self.solve_button = QPushButton("Solve", self)
         self.solve_button.setCursor(Qt.PointingHandCursor)
         self.solve_button.clicked.connect(self.solve)  # type: ignore
 
-        # Tree Widget
         self.tree_widget = QTreeWidget(self)
         self.tree_widget.setHeaderLabels(["Elements"])
         self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -100,14 +82,13 @@ class VisualizationTab(QWidget):
         # --- Main Layout (Grid) ---
         main_layout = QGridLayout(self)
 
-        # --- Top Row ---
-        # Scroll Area for Checkboxes
+        # --- Top Row - Scroll Area for Checkboxes ---
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
         scroll_widget = QWidget(self.scroll_area)
         self.scroll_area.setWidget(scroll_widget)
         self.checkbox_layout = QVBoxLayout(scroll_widget)
-        main_layout.addWidget(self.scroll_area, 0, 0)  # Checkboxes in Row 0, Column 0
+        main_layout.addWidget(self.scroll_area, 0, 0)
 
         # DMC Label and Button (Row 0, Column 1)
         top_right_layout = QVBoxLayout()
@@ -115,8 +96,8 @@ class VisualizationTab(QWidget):
         top_right_layout.addWidget(self.solve_button)
         main_layout.addLayout(top_right_layout, 0, 1)
 
-        # --- Bottom Row (Elements List) ---
-        main_layout.addWidget(self.tree_widget, 1, 0, 1, 2)  # Span 2 columns
+        # --- Bottom Row (Elements List) - Span 2 columns ---
+        main_layout.addWidget(self.tree_widget, 1, 0, 1, 2)
 
     # noinspection PyProtectedMember
     def populate_tree(self):
@@ -129,29 +110,19 @@ class VisualizationTab(QWidget):
         # Remove master_checkbox from layout if it exists
         if self.master_checkbox is not None:
             self.checkbox_layout.removeWidget(self.master_checkbox)
-            self.master_checkbox.deleteLater()  # Important: delete the widget
+            self.master_checkbox.deleteLater()
 
         if self.data.c is not None:
-            total_elements = len(self.data.c)
-
             self.master_checkbox = QCheckBox("Select All", self)
             self.master_checkbox.setChecked(True)
             self.master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
             self.checkbox_layout.addWidget(self.master_checkbox)
 
-            for i in range(total_elements):
+            for i in range(len(self.data.c)):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
-                for key, value in self.data._asdict().items():
-                    if len(value) > i:
-                        if key == "model_types":
-                            model_type_str = "Linear Model 1"  # Default
-                            if value[i] == int(ModelType.LINEAR_MODEL_1):
-                                model_type_str = "Linear Model 2"
-                            elif value[i] == int(ModelType.COMBINATORIAL_MODEL):
-                                model_type_str = "Combinatorial Model"
-                            QTreeWidgetItem(element_item, [f"{key}: {model_type_str}"])
-                        else:
-                            QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
+                for k, v in self.data._asdict().items():
+                    if len(v) > i:
+                        QTreeWidgetItem(element_item, [f"{k}: {ModelType(v[i]) if k == "model_types" else list(v)[i]}"])
 
                 checkbox = QCheckBox(f"Element {i + 1}", self)
                 checkbox.setChecked(True)
@@ -179,8 +150,7 @@ class VisualizationTab(QWidget):
                 selected_criterion = self.get_selected_criterion(i)
 
                 try:
-                    model_class = model_mapping[selected_model]
-                    criterion_method = getattr(model_class, criterion_mapping[selected_criterion])
+                    criterion_method = getattr(model_mapping[selected_model], criterion_mapping[selected_criterion])
                 except KeyError:
                     QMessageBox.warning(self, "Warning", f"Invalid model or criterion selected for Element {i + 1}.")
                     continue
@@ -242,7 +212,6 @@ class VisualizationTab(QWidget):
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
-        # If config_window doesn't exist, assume Linear Model 1
         if configure_button.config_window is None:
             return "Linear Model 1"
 
@@ -267,15 +236,9 @@ class VisualizationTab(QWidget):
             The selected criterion.
         """
 
-        element_item = self.tree_widget.topLevelItem(element_index)
-        configure_button = self.tree_widget.itemWidget(element_item, 1)
-
-        # If config_window doesn't exist, assume Criterion 1
-        if configure_button.config_window is None:
-            return "Criterion 1"
-
-        config_window = configure_button.config_window
-        return config_window.criterion_combo.currentText()
+        configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_index), 1)
+        return ("Criterion 1" if configure_button.config_window is None
+                else configure_button.config_window.criterion_combo.current)
 
     def set_data(self, data):
         """
@@ -359,16 +322,11 @@ class VisualizationTab(QWidget):
                 configure_button.config_window.set_model_type(selected_model_type)
 
             # Update the specific tree item instead of repopulating the entire tree
-            element_item = self.tree_widget.topLevelItem(element_index)
-            # Clear existing children of the item
             element_item.takeChildren()
-            # Add updated children based on the new configuration
             for key, value in self.data._asdict().items():
                 if len(value) > element_index:
-                    if key == "model_types":
-                        QTreeWidgetItem(element_item, [f"{key}: {selected_model_type}"])
-                    else:
-                        QTreeWidgetItem(element_item, [f"{key}: {list(value)[element_index]}"])
+                    QTreeWidgetItem(element_item, [f"{key}: {ModelType(value[element_index]) if key == "model_types"
+                    else list(value)[element_index]}"])
 
     def on_master_checkbox_changed(self, state):
         """

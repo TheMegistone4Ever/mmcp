@@ -1,8 +1,7 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QHBoxLayout, QComboBox,
                              QRadioButton)
 
-from mmcp.data import ModelData
-from mmcp.data.Data import ModelType
+from mmcp.data import ModelData, ModelType
 
 
 class ElementConfigurationWindow(QDialog):
@@ -61,7 +60,6 @@ class ElementConfigurationWindow(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Model selection
         model_layout = QHBoxLayout()
         model_label = QLabel("Model:", self)
         model_layout.addWidget(model_label)
@@ -70,7 +68,6 @@ class ElementConfigurationWindow(QDialog):
         self.linear_model_2_radio = QRadioButton("Linear Model 2", self)
         self.comb_model_radio = QRadioButton("Combinatorial Model", self)
 
-        # Initialize the radio button based on the model type
         if self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_1):
             self.linear_model_1_radio.setChecked(True)
         elif self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_2):
@@ -84,13 +81,12 @@ class ElementConfigurationWindow(QDialog):
 
         layout.addLayout(model_layout)
 
-        # Criterion selection
         criterion_layout = QHBoxLayout()
         criterion_label = QLabel("Criterion:", self)
         criterion_layout.addWidget(criterion_label)
 
         self.criterion_combo = QComboBox(self)
-        self.criterion_combo.addItems(["Criterion 1", "Criterion 2", "Criterion 3"])  # Add all criteria
+        self.criterion_combo.addItems(["Criterion 1", "Criterion 2", "Criterion 3"])
 
         criterion_layout.addWidget(self.criterion_combo)
 
@@ -103,7 +99,6 @@ class ElementConfigurationWindow(QDialog):
 
         layout.addLayout(criterion_layout)
 
-        # Other element data (make them read-only)
         for key, value in self.element_data.items():
             label = QLabel(f"{key}:", self)
             edit = QLineEdit(str(value), self)

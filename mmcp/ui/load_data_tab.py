@@ -41,7 +41,7 @@ class LoadDataTab(QWidget):
             }
         """)
 
-        layout = QVBoxLayout(self)  # Use a layout for better organization
+        layout = QVBoxLayout(self)
 
         self.label = QLabel("Load .json file:", self)
         self.label.setAlignment(Qt.AlignCenter)
@@ -72,7 +72,7 @@ class LoadDataTab(QWidget):
                 if data:
                     self.data_loaded.emit(data)  # type: ignore
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"An error occurred: {e}")  # Display error message
+                QMessageBox.critical(self, "Error", f"An error occurred: {e}")
                 print(f"Error: {e}")
 
 

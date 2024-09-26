@@ -38,13 +38,13 @@ class SolutionDisplayTab(QWidget):
             }
         """)
 
-        layout = QVBoxLayout(self)  # Use a layout for better organization
+        layout = QVBoxLayout(self)
 
         self.text_edit = QTextEdit(self)
         self.text_edit.setReadOnly(True)
         layout.addWidget(self.text_edit)
 
-        button_layout = QHBoxLayout()  # Layout for buttons
+        button_layout = QHBoxLayout()
 
         self.copy_button = QPushButton("Copy to Clipboard", self)
         self.copy_button.clicked.connect(self.copy_to_clipboard)  # type: ignore

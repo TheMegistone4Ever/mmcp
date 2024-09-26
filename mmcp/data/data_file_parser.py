@@ -25,7 +25,6 @@ def parse_data_json_file(filename):
         data = load(f)
 
     try:
-        # Check if required keys exist
         for key in ["c", "A", "b", "d", "model_types", "processing_times", "precedence_graph", "weights"]:
             if key not in data:
                 raise ValueError(f"Missing key '{key}' in the JSON data.")
@@ -112,7 +111,6 @@ def parse_data_json_file(filename):
                 isinstance(item, (int, float)) for sub_list in data["weights"] for item in sub_list):
             raise TypeError(type_error("weights", "NumPy array of numbers"))
 
-        # --- Convert lists to NumPy arrays ---
         model_data = ModelData(
             c=array(data["c"]),
             A=array(data["A"]),

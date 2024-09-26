@@ -1,19 +1,9 @@
-from enum import Enum
 from typing import NamedTuple, List, Dict, Any
 
 from numpy import ndarray
 
+from mmcp.data import ModelType
 from mmcp.utils import with_precision
-
-
-class ModelType(Enum):
-    LINEAR_MODEL_1 = 1
-    LINEAR_MODEL_2 = 2
-    COMBINATORIAL_MODEL = 3
-
-    def __int__(self):
-        return self.value
-
 
 message = lambda name, dictionary: f"{name}:\n{with_precision(dictionary)}"
 

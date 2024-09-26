@@ -1,8 +1,7 @@
 from numpy import set_printoptions, arange
 from numpy.random import seed, rand, randint, choice
 
-from mmcp.data import LinearModelData, CombinatorialModelData, ModelData
-from mmcp.data.Data import ModelType
+from mmcp.data import LinearModelData, CombinatorialModelData, ModelData, ModelType
 
 set_printoptions(precision=2, suppress=True)
 seed(1810)

@@ -37,32 +37,6 @@ class ModelData(NamedTuple):
     precedence_graph: Dict[int, ndarray] = None
     weights: ndarray = None
 
-    # setters
-
-    def set_c(self, c: ndarray):
-        self.c = c
-
-    def set_A(self, A: ndarray):
-        self.A = A
-
-    def set_b(self, b: ndarray):
-        self.b = b
-
-    def set_d(self, d: List[ndarray]):
-        self.d = d
-
-    def set_model_types(self, model_types: ndarray):
-        self.model_types = model_types
-
-    def set_processing_times(self, processing_times: ndarray):
-        self.processing_times = processing_times
-
-    def set_precedence_graph(self, precedence_graph: Dict[int, ndarray]):
-        self.precedence_graph = precedence_graph
-
-    def set_weights(self, weights: ndarray):
-        self.weights = weights
-
     def set_model_type(self, element_index: int, model_type: str):
         """
         Sets or updates the model_type for a specific element.
@@ -71,6 +45,8 @@ class ModelData(NamedTuple):
             element_index: The index of the element to update.
             model_type: The new model_type value.
         """
+
+        assert 0 <= element_index < len(self.model_types), f"Invalid element index: {element_index}"
 
         if model_type == "Linear Model 1":
             model_type = 1

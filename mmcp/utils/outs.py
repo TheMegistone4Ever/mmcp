@@ -1,5 +1,7 @@
 from json import dumps
 
+from numpy import ndarray
+
 
 def with_precision(value, precision=2) -> str:
     """
@@ -13,6 +15,8 @@ def with_precision(value, precision=2) -> str:
     def format_value(val):
         if isinstance(val, (float, int)):
             return f"{val:.{precision}f}"
+        elif isinstance(val, ndarray):
+            return format_value(val.tolist())
         elif isinstance(val, list):
             return [format_value(item) for item in val]
         elif isinstance(val, dict):

@@ -2,6 +2,7 @@ from numpy import set_printoptions, arange
 from numpy.random import seed, rand, randint, choice
 
 from mmcp.data import LinearModelData, CombinatorialModelData, ModelData
+from mmcp.data.Data import ModelType
 
 set_printoptions(precision=2, suppress=True)
 seed(1810)
@@ -26,7 +27,7 @@ def generate_linear_model_data(num_elements=5, num_vars=50) -> LinearModelData:
         A=rand(num_elements, num_vars, num_vars),
         b=rand(num_elements, num_vars),
         d=d,
-        model_types=randint(1, 3 + 1, num_elements),
+        model_types=randint(int(ModelType.LINEAR_MODEL_1), int(ModelType.COMBINATORIAL_MODEL) + 1, num_elements),
     )
 
 

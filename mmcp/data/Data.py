@@ -1,8 +1,19 @@
+from enum import Enum
 from typing import NamedTuple, List, Dict, Any
 
 from numpy import ndarray
 
 from mmcp.utils import with_precision
+
+
+class ModelType(Enum):
+    LINEAR_MODEL_1 = 1
+    LINEAR_MODEL_2 = 2
+    COMBINATORIAL_MODEL = 3
+
+    def __int__(self):
+        return self.value
+
 
 message = lambda name, dictionary: f"{name}:\n{with_precision(dictionary)}"
 
@@ -49,15 +60,15 @@ class ModelData(NamedTuple):
         assert 0 <= element_index < len(self.model_types), f"Invalid element index: {element_index}"
 
         if model_type == "Linear Model 1":
-            model_type = 1
+            model_type = ModelType.LINEAR_MODEL_1
         elif model_type == "Linear Model 2":
-            model_type = 2
+            model_type = ModelType.LINEAR_MODEL_2
         elif model_type == "Combinatorial Model":
-            model_type = 3
+            model_type = ModelType.COMBINATORIAL_MODEL
         else:
             raise ValueError(f"Invalid model type: {model_type}")
 
-        self.model_types[element_index] = model_type
+        self.model_types[element_index] = int(model_type)
 
     def __repr__(self) -> str:
         return message("Model Data", self._asdict())

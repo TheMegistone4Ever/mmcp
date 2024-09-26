@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPus
 
 from mmcp import lm, cm
 from mmcp.data import ModelData, SolutionData
+from mmcp.data.Data import ModelType
 from mmcp.ui import ElementConfigurationWindow
 from mmcp.utils import Vars
 
@@ -144,10 +145,9 @@ class VisualizationTab(QWidget):
                     if len(value) > i:
                         if key == "model_types":
                             model_type_str = "Linear Model 1"  # Default
-                            if value[i] == 2:
+                            if value[i] == int(ModelType.LINEAR_MODEL_1):
                                 model_type_str = "Linear Model 2"
-                                # TODO: Add enum for model types
-                            elif value[i] == 3:  # Assuming 3 for Combinatorial Model TODO: Add '3' to generation
+                            elif value[i] == int(ModelType.COMBINATORIAL_MODEL):
                                 model_type_str = "Combinatorial Model"
                             QTreeWidgetItem(element_item, [f"{key}: {model_type_str}"])
                         else:

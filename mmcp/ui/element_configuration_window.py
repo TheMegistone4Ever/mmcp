@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogBut
                              QRadioButton)
 
 from mmcp.data import ModelData
+from mmcp.data.Data import ModelType
 
 
 class ElementConfigurationWindow(QDialog):
@@ -70,11 +71,11 @@ class ElementConfigurationWindow(QDialog):
         self.comb_model_radio = QRadioButton("Combinatorial Model", self)
 
         # Initialize the radio button based on the model type
-        if self.element_data["model_types"] == 1:
+        if self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_1):
             self.linear_model_1_radio.setChecked(True)
-        elif self.element_data["model_types"] == 2:
+        elif self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_2):
             self.linear_model_2_radio.setChecked(True)
-        elif self.element_data["model_types"] == 3:
+        elif self.element_data["model_types"] == int(ModelType.COMBINATORIAL_MODEL):
             self.comb_model_radio.setChecked(True)
 
         model_layout.addWidget(self.linear_model_1_radio)

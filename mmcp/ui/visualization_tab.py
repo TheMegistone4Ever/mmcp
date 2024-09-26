@@ -277,10 +277,7 @@ class VisualizationTab(QWidget):
         """
 
         self.data = data
-
-        save_filename = f"sol_{"x".join(map(str, self.data.A.shape))}_{"m".join(map(str, self.data.model_types))}"
-        self.solution_display_tab.set_filename(save_filename)
-
+        self.solution_display_tab.set_filename(f"sol_{"x".join(map(str, self.data.A.shape))}")
         self.populate_tree()
 
     def show_context_menu(self, pos):

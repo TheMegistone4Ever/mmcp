@@ -358,8 +358,17 @@ class VisualizationTab(QWidget):
             if selected_model_type is not None:
                 configure_button.config_window.set_model_type(selected_model_type)
 
-            # Update tree widget to reflect the change
-            self.populate_tree()
+            # Update the specific tree item instead of repopulating the entire tree
+            element_item = self.tree_widget.topLevelItem(element_index)
+            # Clear existing children of the item
+            element_item.takeChildren()
+            # Add updated children based on the new configuration
+            for key, value in self.data._asdict().items():
+                if len(value) > element_index:
+                    if key == "model_types":
+                        QTreeWidgetItem(element_item, [f"{key}: {selected_model_type}"])
+                    else:
+                        QTreeWidgetItem(element_item, [f"{key}: {list(value)[element_index]}"])
 
     def on_master_checkbox_changed(self, state):
         """

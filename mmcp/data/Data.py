@@ -63,6 +63,26 @@ class ModelData(NamedTuple):
     def set_weights(self, weights: ndarray):
         self.weights = weights
 
+    def set_model_type(self, element_index: int, model_type: str):
+        """
+        Sets or updates the model_type for a specific element.
+
+        Args:
+            element_index: The index of the element to update.
+            model_type: The new model_type value.
+        """
+
+        if model_type == "Linear Model 1":
+            model_type = 1
+        elif model_type == "Linear Model 2":
+            model_type = 2
+        elif model_type == "Combinatorial Model":
+            model_type = 3
+        else:
+            raise ValueError(f"Invalid model type: {model_type}")
+
+        self.model_types[element_index] = model_type
+
     def __repr__(self) -> str:
         return message("Model Data", self._asdict())
 

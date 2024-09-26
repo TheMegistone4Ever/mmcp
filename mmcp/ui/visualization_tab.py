@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QLineEdit, QMenu,
+from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu,
                              QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
 
 from mmcp import lm, cm
@@ -142,7 +142,16 @@ class VisualizationTab(QWidget):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
                 for key, value in self.data._asdict().items():
                     if len(value) > i:
-                        QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
+                        if key == "model_types":
+                            model_type_str = "Linear Model 1"  # Default
+                            if value[i] == 2:
+                                model_type_str = "Linear Model 2"
+                                # TODO: Add enum for model types
+                            elif value[i] == 3:  # Assuming 3 for Combinatorial Model TODO: Add '3' to generation
+                                model_type_str = "Combinatorial Model"
+                            QTreeWidgetItem(element_item, [f"{key}: {model_type_str}"])
+                        else:
+                            QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
 
                 checkbox = QCheckBox(f"Element {i + 1}", self)
                 checkbox.setChecked(True)
@@ -242,7 +251,7 @@ class VisualizationTab(QWidget):
             return "Linear Model 1"
         elif config_window.linear_model_2_radio.isChecked():
             return "Linear Model 2"
-        elif config_window.combinatorial_model_radio.isChecked():
+        elif config_window.comb_model_radio.isChecked():
             return "Combinatorial Model"
         else:
             return None
@@ -332,17 +341,25 @@ class VisualizationTab(QWidget):
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
         if not configure_button.config_window:
-            configure_button.config_window = ElementConfigurationWindow(element_data, element_index)
+            configure_button.config_window = ElementConfigurationWindow(self.data, element_data, element_index)
 
         if model_type:
             configure_button.config_window.set_model_type(model_type)
 
         if configure_button.config_window.exec_() == QDialog.Accepted:
-            for edit in configure_button.config_window.findChildren(QLineEdit):
-                name = edit.objectName()  # empty: ''
-                # TODO: Fix this part
-                # setter = getattr(self.data, f"set_{edit.objectName()}")
-                # setter(edit.text())
+            selected_model_type = None
+            if configure_button.config_window.linear_model_1_radio.isChecked():
+                selected_model_type = "Linear Model 1"
+            elif configure_button.config_window.linear_model_2_radio.isChecked():
+                selected_model_type = "Linear Model 2"
+            elif configure_button.config_window.comb_model_radio.isChecked():
+                selected_model_type = "Combinatorial Model"
+
+            if selected_model_type is not None:
+                configure_button.config_window.set_model_type(selected_model_type)
+
+            # Update tree widget to reflect the change
+            self.populate_tree()
 
     def on_master_checkbox_changed(self, state):
         """

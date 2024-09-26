@@ -1,13 +1,13 @@
 import sys
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QFileDialog, QMessageBox, QApplication
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QFileDialog, QMessageBox, QApplication, QVBoxLayout
 
-from mmcp.data import parse_data_json_file
+from mmcp.data import parse_data_json_file, ModelData
 
 
 class LoadDataTab(QWidget):
-    data_loaded = pyqtSignal(dict)
+    data_loaded = pyqtSignal(ModelData)
 
     def __init__(self):
         super().__init__()
@@ -18,15 +18,44 @@ class LoadDataTab(QWidget):
 
     def init_ui(self):
         """
-        Initializes the UI for the load data tab.
+        Initializes the UI for the load data tab with a Microsoft-style theme.
         """
 
-        self.label = QLabel("Load .json file:", self)  # Updated label
-        self.label.move(20, 20)
+        self.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                font-family: Arial;
+            }
+            QLabel {
+                color: #333333; /* Point Charcoal */
+            }
+            QPushButton {
+                background-color: #0078D7; /* Microsoft Blue */
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #005A9E; /* Darker blue on hover */
+            }
+        """)
+
+        layout = QVBoxLayout(self)  # Use a layout for better organization
+
+        self.label = QLabel("Load .json file:", self)
+        self.label.setAlignment(Qt.AlignCenter)
+        font = self.label.font()
+        font.setPointSize(32)
+        self.label.setFont(font)
+        self.label.setAlignment(Qt.AlignBottom | Qt.AlignHCenter)
+        layout.addWidget(self.label)
 
         self.load_button = QPushButton("Browse", self)
-        self.load_button.move(150, 15)
         self.load_button.clicked.connect(self.browse_file)  # type: ignore
+        self.load_button.move(200, 200)
+
+        layout.addWidget(self.load_button)
 
     def browse_file(self):
         """

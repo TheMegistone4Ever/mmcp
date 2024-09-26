@@ -1,11 +1,12 @@
-from mmcp import *
+from mmcp import lm, cm
+from mmcp.data import generate_linear_model_data, generate_combinatorial_model_data
 
 
 def main():
     linear_data = generate_linear_model_data()
     combinatorial_data = generate_combinatorial_model_data()
-    first_linear_data = {k: list(v)[0] for k, v in linear_data.items()}
-    first_combinatorial_data = {k: list(v)[0] for k, v in combinatorial_data.items()}
+    first_linear_data = {k: list(v)[0] for k, v in linear_data._asdict().items()}
+    first_combinatorial_data = {k: list(v)[0] for k, v in combinatorial_data._asdict().items()}
     first_combinatorial_data["precedence_graph"] = {1: []}
 
     print("Linear model data for the first element:")

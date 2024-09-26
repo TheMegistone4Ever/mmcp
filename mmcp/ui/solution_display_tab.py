@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox
-from numpy import array
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout
 
-from mmcp.data import generate_data_json_file
+from mmcp.data import generate_data_json_file, SolutionData
 
 
 class SolutionDisplayTab(QWidget):
@@ -12,51 +11,66 @@ class SolutionDisplayTab(QWidget):
         self.copy_button = None
         self.text_edit = None
         self.filename = "solution.json"
+        self.solution = None
 
         self.init_ui()
 
     def init_ui(self):
         """
-        Initializes the UI for the solution display tab.
+        Initializes the UI for the solution display tab with a Microsoft-style theme.
         """
 
+        self.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                font-family: Arial;
+            }
+            QTextEdit {
+                border: 1px solid #CCCCCC;
+                padding: 5px;
+                font-size: 12pt;
+            }
+            QPushButton {
+                background-color: #0078D7; /* Microsoft Blue */
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #005A9E; /* Darker blue on hover */
+            }
+        """)
+
+        layout = QVBoxLayout(self)  # Use a layout for better organization
+
         self.text_edit = QTextEdit(self)
-        self.text_edit.setGeometry(20, 20, 760, 400)
         self.text_edit.setReadOnly(True)
+        layout.addWidget(self.text_edit)
+
+        button_layout = QHBoxLayout()  # Layout for buttons
 
         self.copy_button = QPushButton("Copy to Clipboard", self)
-        self.copy_button.setGeometry(20, 440, 150, 30)
         self.copy_button.clicked.connect(self.copy_to_clipboard)  # type: ignore
+        button_layout.addWidget(self.copy_button)
 
         self.save_button = QPushButton("Save to .json file", self)
-        self.save_button.setGeometry(200, 440, 150, 30)
         self.save_button.clicked.connect(self.save_to_file)  # type: ignore
+        button_layout.addWidget(self.save_button)
 
-    def display_solution(self, solution_data):
+        layout.addLayout(button_layout)
+
+    def display_solution(self, solution_data: SolutionData):
         """
         Formats and displays the solution data in the QTextEdit.
 
         Args:
-            solution_data: A dictionary or list containing the solution data.
+            solution_data: The solution data to display.
         """
 
-        formatted_solution = ""
-        if isinstance(solution_data, dict):
-            for key, value in solution_data.items():
-                formatted_solution += f"{key}: {value}\n"
-        elif isinstance(solution_data, list):
-            for message, solution in solution_data:
-                formatted_solution += f"{message}: {solution}\n"
-        else:  # Handle other types of data
-            formatted_solution = repr(solution_data)
-        self.text_edit.setPlainText(formatted_solution)
-
-    def display_no_solution_message(self):
-        """
-        Displays a message indicating that no optimal solution was found.
-        """
-
-        self.text_edit.setPlainText("No optimal solution found. Please check your input data.")
+        self.solution = solution_data
+        self.text_edit.setPlainText(str(self.solution) if len(self.solution.names)
+                                    else "No optimal solution found.\nPlease check your input data.")
 
     def copy_to_clipboard(self):
         """
@@ -92,20 +106,10 @@ class SolutionDisplayTab(QWidget):
         filename, _ = QFileDialog.getSaveFileName(self, "Save Solution", self.filename, save_filter, options=options)
         if filename:
             try:
-                # Assuming you want to save the formatted solution as JSON
-                solution_data = self.get_solution_data_from_text()  # Get the data from QTextEdit
-                generate_data_json_file(filename, data=solution_data)  # Use generate_data_json_file to save
-
+                generate_data_json_file(filename, data=self.solution)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
-
-    def get_solution_data_from_text(self) -> dict:
-        """
-        Extract solution data from the QTextEdit (you might need to adjust this based on your formatting).
-
-        Returns:
-            A dictionary containing the solution data.
-        """
-
-        return {k: array(v) for k, v in
-                (line.split(": ", 1) for line in self.text_edit.toPlainText().splitlines() if ": " in line)}
+            else:
+                QMessageBox.information(self, "Success", "File saved successfully.")
+            finally:
+                self.filename = filename

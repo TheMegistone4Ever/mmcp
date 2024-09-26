@@ -22,8 +22,38 @@ class ElementConfigurationWindow(QDialog):
 
     def init_ui(self):
         """
-        Initializes the UI for the element configuration window.
+        Initializes the UI for the element configuration window with a Microsoft-style theme.
         """
+
+        self.setStyleSheet("""
+            QDialog {
+                background-color: white;
+                font-family: Arial;
+            }
+            QLabel {
+                color: #333333; /* Point Charcoal */
+            }
+            QLineEdit, QComboBox {
+                border: 1px solid #CCCCCC;
+                padding: 5px;
+            }
+            QRadioButton {
+                color: #333333; /* Point Charcoal */
+            }
+            QPushButton {
+                background-color: #0078D7; /* Microsoft Blue */
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #005A9E; /* Darker blue on hover */
+            }
+            QDialogButtonBox QPushButton {
+                min-width: 80px; /* Ensure consistent button width */
+            }
+        """)
 
         layout = QVBoxLayout(self)
 

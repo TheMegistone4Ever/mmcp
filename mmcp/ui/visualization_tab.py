@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPus
                              QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
 
 from mmcp import lm, cm
+from mmcp.data import ModelData, SolutionData
 from mmcp.ui import ElementConfigurationWindow
 from mmcp.utils import Vars
 
@@ -38,70 +39,60 @@ class VisualizationTab(QWidget):
         self.elements_checkboxes = []
         self.master_checkbox = None
         self.dmc_label = None
-        self.data = None
-        self.c, self.A, self.b, self.d = None, None, None, None
-        self.model_types, self.processing_times, self.weights, self.precedence_graph = None, None, None, None
+        self.data = ModelData()
 
         self.init_ui()
 
     def init_ui(self):
         """
-        Initializes the UI for the visualization tab using a 2x2 grid layout.
+        Initializes the UI for the visualization tab using a 2x2 grid layout with a Microsoft-style theme.
         """
 
-        # DMC Label with a modern, flat style
-        self.dmc_label = QLabel("DMC (Decision Making Center)", self)
-        self.dmc_label.setAlignment(Qt.AlignCenter)
-        self.dmc_label.setStyleSheet("""
-            font-size: 16px;
-            font-weight: bold;
-            color: #2E8BC0;  /* Chrome-like Blue */
-            padding: 10px 0;
-        """)
-
-        # Solve Button with Material Design style
-        self.solve_button = QPushButton("Solve", self)
-        self.solve_button.setStyleSheet("""
+        self.setStyleSheet("""
+            QLabel {
+                color: #333333; /* Point Charcoal */
+            }
             QPushButton {
-                background-color: #4CAF50;  /* Flat Green */
+                background-color: #0078D7; /* Microsoft Blue */
                 color: white;
-                font-weight: bold;
-                padding: 10px;
-                border-radius: 20px;  /* Rounded corners for Chrome style */
-                border: none;  /* No borders for flat look */
-                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
             }
             QPushButton:hover {
-                background-color: #45A049;  /* Slightly darker green on hover */
-                box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);  /* Stronger shadow on hover */
+                background-color: #005A9E; /* Darker blue on hover */
             }
-            QPushButton:pressed {
-                background-color: #3D8C43;  /* Darker shade for press */
+            QTreeWidget {
+                border: 1px solid #CCCCCC;
+            }
+            QHeaderView::section {
+                background-color: #F0F0F0; /* Light gray */
+                color: #333333; /* Point Charcoal */
+                padding: 8px;
+                border: 1px solid #CCCCCC;
+                border-bottom: none;
+            }
+            QCheckBox {
+                color: #333333; /* Point Charcoal */
+            }
+            QScrollArea {
+                border: 1px solid #CCCCCC;
             }
         """)
+
+        # DMC Label
+        self.dmc_label = QLabel("DMC (Decision Making Center)", self)
+        self.dmc_label.setAlignment(Qt.AlignCenter)
+        self.dmc_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+
+        # Solve Button
+        self.solve_button = QPushButton("Solve", self)
         self.solve_button.setCursor(Qt.PointingHandCursor)
         self.solve_button.clicked.connect(self.solve)  # type: ignore
 
-        # Tree Widget styled with a flat, modern look
+        # Tree Widget
         self.tree_widget = QTreeWidget(self)
         self.tree_widget.setHeaderLabels(["Elements"])
-        self.tree_widget.setStyleSheet("""
-            QTreeWidget {
-                background-color: #FFFFFF;  /* Flat white background */
-                border: 1px solid #E0E0E0;  /* Light gray border */
-                border-radius: 10px;  /* Slightly rounded edges */
-            }
-            QTreeWidget::item {
-                padding: 8px;
-            }
-            QHeaderView::section {
-                background-color: #2E8BC0;  /* Blue header background */
-                color: white;
-                font-weight: bold;
-                padding: 8px;
-                border: none;  /* Remove border for cleaner look */
-            }
-        """)
         self.tree_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree_widget.customContextMenuRequested.connect(self.show_context_menu)  # type: ignore
 
@@ -109,19 +100,9 @@ class VisualizationTab(QWidget):
         main_layout = QGridLayout(self)
 
         # --- Top Row ---
-        # Scroll Area for Checkboxes, with rounded and flat design
+        # Scroll Area for Checkboxes
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setStyleSheet("""
-            QScrollArea {
-                background-color: #F9F9F9;  /* Light gray background for Chrome-style */
-                border: 1px solid #E0E0E0;  /* Thin light gray border */
-                border-radius: 10px;  /* Slightly rounded corners */
-            }
-            QWidget {
-                background-color: #F9F9F9;  /* Same background for consistency */
-            }
-        """)
         scroll_widget = QWidget(self.scroll_area)
         self.scroll_area.setWidget(scroll_widget)
         self.checkbox_layout = QVBoxLayout(scroll_widget)
@@ -136,6 +117,7 @@ class VisualizationTab(QWidget):
         # --- Bottom Row (Elements List) ---
         main_layout.addWidget(self.tree_widget, 1, 0, 1, 2)  # Span 2 columns
 
+    # noinspection PyProtectedMember
     def populate_tree(self):
         """
         Populates the tree widget with the data and manages checkboxes.
@@ -148,8 +130,8 @@ class VisualizationTab(QWidget):
             self.checkbox_layout.removeWidget(self.master_checkbox)
             self.master_checkbox.deleteLater()  # Important: delete the widget
 
-        if self.data:
-            total_elements = len(self.c)
+        if self.data.c is not None:
+            total_elements = len(self.data.c)
 
             self.master_checkbox = QCheckBox("Select All", self)
             self.master_checkbox.setChecked(True)
@@ -158,7 +140,7 @@ class VisualizationTab(QWidget):
 
             for i in range(total_elements):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
-                for key, value in self.data.items():
+                for key, value in self.data._asdict().items():
                     if len(value) > i:
                         QTreeWidgetItem(element_item, [f"{key}: {list(value)[i]}"])
 
@@ -179,7 +161,7 @@ class VisualizationTab(QWidget):
         """
 
         try:
-            solutions = []
+            solutions = SolutionData()
             for i, checkbox in enumerate(self.elements_checkboxes):
                 if not checkbox.isChecked():
                     continue
@@ -195,45 +177,42 @@ class VisualizationTab(QWidget):
                     continue
 
                 if selected_model.startswith("Linear Model"):
+                    params_list = [self.data.c[i], self.data.A[i], self.data.b[i]]
                     if selected_model == "Linear Model 1":
-                        params = [self.c[i], self.A[i], self.b[i]]
                         if selected_criterion == "Criterion 1":
-                            params.append(Vars.M)
+                            params_list.append(Vars.M)
                         elif selected_criterion == "Criterion 2":
-                            params.extend([Vars.z_min, Vars.alpha])
+                            params_list.extend([Vars.z_min, Vars.alpha])
                         elif selected_criterion == "Criterion 3":
-                            params.append(Vars.weights)
-                        solution = criterion_method.solve(*params)
+                            params_list.append(Vars.weights)
+                        solution = criterion_method.solve(*params_list)
                     elif selected_model == "Linear Model 2":
-                        params = [self.c[i], self.A[i], self.b[i], self.d[i]]
+                        params_list.append(self.data.d[i])
                         if selected_criterion == "Criterion 1":
-                            params.append(Vars.M)
+                            params_list.append(Vars.M)
                         elif selected_criterion == "Criterion 2":
-                            params.extend([Vars.z_min, Vars.alpha])
+                            params_list.extend([Vars.z_min, Vars.alpha])
                         elif selected_criterion == "Criterion 3":
-                            params.append(Vars.weights)
-                        solution = criterion_method.solve(*params)
+                            params_list.append(Vars.weights)
+                        solution = criterion_method.solve(*params_list)
                     else:  # Linear Model 3
                         # TODO: Implement Linear Model 3
-                        # params = [self.c, self.A, self.b, self.d, self.model_types, Vars.beta]
-                        # solution = criterion_method.solve(*params)
+                        # params_list.extend([self.data.model_types, Vars.beta])
+                        # solution = criterion_method.solve(*params_list)
                         raise NotImplementedError("Linear Model 3 is not implemented.")
                 else:  # Combinatorial Model
                     solution = criterion_method.solve(
-                        self.processing_times, self.weights, self.precedence_graph,
+                        self.data.processing_times, self.data.weights, self.data.precedence_graph,
                         Vars.M if selected_criterion == "Criterion 1" else Vars.target_difference
                     )
 
                 if solution:
-                    solutions.append((f"Element {i + 1}", solution))
+                    solutions.names.append(f"Element {i + 1}")
+                    solutions.values.append(solution)
                 else:
                     QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
 
-            if solutions:
-                self.solution_display_tab.display_solution(solutions)
-            else:
-                self.solution_display_tab.display_no_solution_message()
-
+            self.solution_display_tab.display_solution(solutions)
             self.tab_widget.setCurrentIndex(2)
 
         except Exception as e:
@@ -297,13 +276,9 @@ class VisualizationTab(QWidget):
             data: The data to be visualized.
         """
 
-        # TODO: replace with class: Data (extends @dataclass)
         self.data = data
-        self.c, self.A, self.b, self.d, self.model_types, self.processing_times, self.weights, self.precedence_graph = \
-            data["c"], data["A"], data["b"], data["d"], data["model_types"], data["processing_times"], \
-                data["weights"], data["precedence_graph"]
 
-        save_filename = f"sol_{"x".join(map(str, self.A.shape))}_{"m".join(map(str, self.model_types))}"
+        save_filename = f"sol_{"x".join(map(str, self.data.A.shape))}_{"m".join(map(str, self.data.model_types))}"
         self.solution_display_tab.set_filename(save_filename)
 
         self.populate_tree()
@@ -341,6 +316,7 @@ class VisualizationTab(QWidget):
             else:
                 self.open_configuration_window(element_index, None)
 
+    # noinspection PyProtectedMember
     def open_configuration_window(self, element_index, model_type):
         """
         Opens the configuration window for the specified element index and model type.
@@ -351,7 +327,7 @@ class VisualizationTab(QWidget):
         """
 
         element_data = {}
-        for key, value in self.data.items():
+        for key, value in self.data._asdict().items():
             if len(value) > element_index:
                 element_data[key] = list(value)[element_index]
 
@@ -366,7 +342,10 @@ class VisualizationTab(QWidget):
 
         if configure_button.config_window.exec_() == QDialog.Accepted:
             for edit in configure_button.config_window.findChildren(QLineEdit):
-                self.data[edit.objectName()] = edit.text()
+                name = edit.objectName()  # empty: ''
+                # TODO: Fix this part
+                # setter = getattr(self.data, f"set_{edit.objectName()}")
+                # setter(edit.text())
 
     def on_master_checkbox_changed(self, state):
         """

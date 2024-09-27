@@ -17,7 +17,7 @@ class Solver:
             return LinearModel2()
         elif model_type == ModelType.COMBINATORIAL_MODEL:
             return CombinatorialModel()
-        elif model_type == ModelType.LINEAR_MODEL_3:  # TODO: Implement Linear Model 3
+        elif model_type == ModelType.LINEAR_MODEL_3:
             return LinearModel3()
         else:
             raise ValueError(f"Invalid model type: {model_type}")

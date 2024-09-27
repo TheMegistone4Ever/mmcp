@@ -355,4 +355,3 @@ class VisualizationTab(QWidget):
         num_checked = sum(checkbox.isChecked() for checkbox in self.elements_checkboxes)
         self.master_checkbox.setCheckState(Qt.Checked if num_checked == len(self.elements_checkboxes)
                                            else Qt.Unchecked if num_checked == 0 else Qt.PartiallyChecked)
-        print(f"Element checkbox state changed to: {state}, {num_checked = }.")

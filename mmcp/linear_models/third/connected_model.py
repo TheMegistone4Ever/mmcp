@@ -20,7 +20,7 @@ def solve_connected_model(c_list, A_list, b_list, d_list, model_types, beta):
     solver = pywraplp.Solver.CreateSolver("GLOP")
 
     num_elements = len(c_list)
-    x_list = []
+    x_list = list()
     for i in range(num_elements):
         num_vars = len(c_list[i])
         x_list.append([solver.NumVar(0, solver.infinity(), f"x_{i}_{j}") for j in range(num_vars)])

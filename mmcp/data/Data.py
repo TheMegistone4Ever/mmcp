@@ -2,7 +2,7 @@ from typing import NamedTuple, List, Dict, Any
 
 from numpy import ndarray
 
-from mmcp.data import ModelType
+from mmcp.data.ModelType import ModelType
 from mmcp.utils import with_precision
 
 message = lambda name, dictionary: f"{name}:\n{with_precision(dictionary)}"
@@ -65,8 +65,8 @@ class ModelData(NamedTuple):
 
 
 class SolutionData(NamedTuple):
-    names: List[str] = []
-    values: List[Any] = []
+    names: List[str] = list()
+    values: List[Any] = list()
 
     def __repr__(self) -> str:
         return f"Solution Data:\n{"\n".join([f"{name}: {value}" for name, value in zip(self.names, self.values)])}"

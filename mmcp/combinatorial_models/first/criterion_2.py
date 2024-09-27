@@ -65,7 +65,7 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
 
     # Precedence constraints
     for j in range(num_jobs):
-        for pred in precedence_graph.get(j, []):
+        for pred in precedence_graph.get(j, list()):
             solver.Add(completion_times[j] >= completion_times[pred] + processing_times[j])
 
     # Non-overlap constraints (simplified for LP relaxation)

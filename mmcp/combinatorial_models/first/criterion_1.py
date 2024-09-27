@@ -24,7 +24,7 @@ def solve(processing_times, precedence_graph, weights, M):
     # Constraints:
     # 1. Precedence constraints
     for j in range(num_jobs):
-        for pred in precedence_graph.get(j, []):
+        for pred in precedence_graph.get(j, list()):
             solver.Add(completion_times[j] >= completion_times[pred] + processing_times[j])
 
     # 2. Non-overlap constraints (simplified for LP relaxation)

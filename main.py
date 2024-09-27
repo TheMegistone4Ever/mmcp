@@ -7,7 +7,7 @@ def main():
     combinatorial_data = generate_combinatorial_model_data()
     first_linear_data = {k: list(v)[0] for k, v in linear_data._asdict().items()}
     first_combinatorial_data = {k: list(v)[0] for k, v in combinatorial_data._asdict().items()}
-    first_combinatorial_data["precedence_graph"] = {1: []}
+    first_combinatorial_data["precedence_graph"] = {1: list()}
 
     print("Linear model data for the first element:")
     for name, values in first_linear_data.items():

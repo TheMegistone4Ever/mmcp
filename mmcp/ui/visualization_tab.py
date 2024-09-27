@@ -22,7 +22,7 @@ class VisualizationTab(QWidget):
         self.checkbox_layout = None
         self.solve_button = None
         self.tree_widget = None
-        self.elements_checkboxes = []
+        self.elements_checkboxes = list()
         self.master_checkbox = None
         self.dmc_label = None
         self.data = ModelData()
@@ -141,8 +141,9 @@ class VisualizationTab(QWidget):
         Displays the solution in the SolutionDisplayTab.
         """
 
+        solutions = SolutionData(names=list(), values=list())
+
         try:
-            solutions = SolutionData()
             for i, checkbox in enumerate(self.elements_checkboxes):
                 if not checkbox.isChecked():
                     continue
@@ -192,12 +193,13 @@ class VisualizationTab(QWidget):
                 else:
                     QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
 
-            self.solution_display_tab.display_solution(solutions)
-            self.tab_widget.setCurrentIndex(2)
-
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {e}")
             print(f"Error: {e}")
+
+        finally:
+            self.solution_display_tab.display_solution(solutions)
+            self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
 
     def get_selected_model(self, element_index):
         """
@@ -239,7 +241,7 @@ class VisualizationTab(QWidget):
 
         configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_index), 1)
         return ("Criterion 1" if configure_button.config_window is None
-                else configure_button.config_window.criterion_combo.current)
+                else configure_button.config_window.criterion_combo.currentText())
 
     def set_data(self, data):
         """
@@ -296,7 +298,7 @@ class VisualizationTab(QWidget):
             model_type: The model type to set.
         """
 
-        element_data = {}
+        element_data = dict()
         for key, value in self.data._asdict().items():
             if len(value) > element_index:
                 element_data[key] = list(value)[element_index]

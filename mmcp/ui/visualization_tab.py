@@ -2,9 +2,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu,
                              QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
 
-from mmcp.data import ModelData, SolutionData, ModelType
+from mmcp.core import Solver
+from mmcp.data import ModelData, SolutionData
 from mmcp.ui import ElementConfigurationWindow
-from mmcp.utils import Vars, model_mapping, criterion_mapping
+from mmcp.utils import ModelType
 
 
 class VisualizationTab(QWidget):
@@ -147,46 +148,7 @@ class VisualizationTab(QWidget):
             for i, checkbox in enumerate(self.elements_checkboxes):
                 if not checkbox.isChecked():
                     continue
-
-                selected_model = self.get_selected_model(i)
-                selected_criterion = self.get_selected_criterion(i)
-
-                try:
-                    criterion_method = getattr(model_mapping[selected_model], criterion_mapping[selected_criterion])
-                except KeyError:
-                    QMessageBox.warning(self, "Warning", f"Invalid model or criterion selected for Element {i + 1}.")
-                    continue
-
-                if selected_model.startswith("Linear Model"):
-                    params_list = [self.data.c[i], self.data.A[i], self.data.b[i]]
-                    if selected_model == "Linear Model 1":
-                        if selected_criterion == "Criterion 1":
-                            params_list.append(Vars.M)
-                        elif selected_criterion == "Criterion 2":
-                            params_list.extend([Vars.z_min, Vars.alpha])
-                        elif selected_criterion == "Criterion 3":
-                            params_list.append(Vars.weights)
-                        solution = criterion_method.solve(*params_list)
-                    elif selected_model == "Linear Model 2":
-                        params_list.append(self.data.d[i])
-                        if selected_criterion == "Criterion 1":
-                            params_list.append(Vars.M)
-                        elif selected_criterion == "Criterion 2":
-                            params_list.extend([Vars.z_min, Vars.alpha])
-                        elif selected_criterion == "Criterion 3":
-                            params_list.append(Vars.weights)
-                        solution = criterion_method.solve(*params_list)
-                    else:  # Linear Model 3
-                        # TODO: Implement Linear Model 3
-                        # params_list.extend([self.data.model_types, Vars.beta])
-                        # solution = criterion_method.solve(*params_list)
-                        raise NotImplementedError("Linear Model 3 is not implemented.")
-                else:  # Combinatorial Model
-                    solution = criterion_method.solve(
-                        self.data.processing_times, self.data.weights, self.data.precedence_graph,
-                        Vars.M if selected_criterion == "Criterion 1" else Vars.target_difference
-                    )
-
+                solution = Solver(self.ith_data(i), self.selected_model_type(i), self.selected_criterion(i)).solve()
                 if solution:
                     solutions.names.append(f"Element {i + 1}")
                     solutions.values.append(solution)
@@ -201,7 +163,25 @@ class VisualizationTab(QWidget):
             self.solution_display_tab.display_solution(solutions)
             self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
 
-    def get_selected_model(self, element_index):
+    def ith_data(self, element_index: int):
+        """
+        Get the data for the given element index.
+
+        Args:
+            element_index: The index of the element.
+
+        Returns:
+            The data for the element.
+        """
+
+        element_data = dict()
+        for key, value in self.data._asdict().items():
+            if len(value) > element_index:
+                element_data[key] = list(value)[element_index]
+
+        return ModelData(**element_data)
+
+    def selected_model_type(self, element_index):
         """
         Get the selected model type for the given element index.
 
@@ -209,26 +189,25 @@ class VisualizationTab(QWidget):
             element_index: The index of the element.
 
         Returns:
-            The selected model type.
+            The selected model type as a ModelType enum member.
         """
 
         element_item = self.tree_widget.topLevelItem(element_index)
         configure_button = self.tree_widget.itemWidget(element_item, 1)
 
-        if configure_button.config_window is None:
-            return "Linear Model 1"
+        if (config_window := configure_button.config_window) is None:
+            return ModelType.LINEAR_MODEL_1
 
-        config_window = configure_button.config_window
         if config_window.linear_model_1_radio.isChecked():
-            return "Linear Model 1"
+            return ModelType.LINEAR_MODEL_1
         elif config_window.linear_model_2_radio.isChecked():
-            return "Linear Model 2"
+            return ModelType.LINEAR_MODEL_2
+        elif config_window.linear_model_3_radio.isChecked():
+            return ModelType.LINEAR_MODEL_3
         elif config_window.comb_model_radio.isChecked():
-            return "Combinatorial Model"
-        else:
-            return None
+            return ModelType.COMBINATORIAL_MODEL
 
-    def get_selected_criterion(self, element_index):
+    def selected_criterion(self, element_index):
         """
         Get the selected criterion for the given element index.
 
@@ -340,9 +319,8 @@ class VisualizationTab(QWidget):
         """
 
         for checkbox in self.elements_checkboxes:
-            if checkbox.text() != "Select All":
-                if checkbox.isChecked() != (state == Qt.Checked):
-                    checkbox.setChecked(state)
+            if checkbox.isChecked() != (state == Qt.Checked):
+                checkbox.setChecked(state)
 
     def on_element_checkbox_changed(self, state):
         """

@@ -6,6 +6,7 @@ from ..linear_models import first, second, third
 
 
 class Vars:
+    beta = .5
     M = 1000
     alpha = .9
     z_min = .8

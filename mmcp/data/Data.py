@@ -2,8 +2,8 @@ from typing import NamedTuple, List, Dict, Any
 
 from numpy import ndarray
 
-from mmcp.data.ModelType import ModelType
 from mmcp.utils import with_precision
+from mmcp.utils.ModelType import ModelType
 
 message = lambda name, dictionary: f"{name}:\n{with_precision(dictionary)}"
 

@@ -4,7 +4,8 @@ from enum import Enum
 class ModelType(Enum):
     LINEAR_MODEL_1 = 1
     LINEAR_MODEL_2 = 2
-    COMBINATORIAL_MODEL = 3
+    LINEAR_MODEL_3 = 3
+    COMBINATORIAL_MODEL = 4
 
     def __int__(self):
         return self.value

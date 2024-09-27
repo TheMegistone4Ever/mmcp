@@ -55,4 +55,4 @@ class SolutionData(NamedTuple):
     values: List[Any] = list()
 
     def __repr__(self) -> str:
-        return f"Solution Data:\n{"\n".join([f"Element №{i}:\n{value}\n" for i, value in enumerate(self.values)])}"
+        return f"Solution Data:\n{"\n".join([f"Element №{i + 1}:\n{value}\n" for i, value in enumerate(self.values)])}"

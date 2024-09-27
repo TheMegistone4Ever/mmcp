@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPus
 from mmcp.core import Solver
 from mmcp.data import ModelData, SolutionData
 from mmcp.ui import ElementConfigurationWindow
-from mmcp.utils import ModelType
+from mmcp.utils import ModelType, Criterion
 
 
 class VisualizationTab(QWidget):
@@ -142,7 +142,7 @@ class VisualizationTab(QWidget):
         Displays the solution in the SolutionDisplayTab.
         """
 
-        solutions = SolutionData(names=list(), values=list())
+        solutions = SolutionData(values=list())
 
         try:
             for i, checkbox in enumerate(self.elements_checkboxes):
@@ -150,7 +150,6 @@ class VisualizationTab(QWidget):
                     continue
                 solution = Solver(self.ith_data(i), self.selected_model_type(i), self.selected_criterion(i)).solve()
                 if solution:
-                    solutions.names.append(f"Element {i + 1}")
                     solutions.values.append(solution)
                 else:
                     QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
@@ -163,6 +162,7 @@ class VisualizationTab(QWidget):
             self.solution_display_tab.display_solution(solutions)
             self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
 
+    # noinspection PyProtectedMember
     def ith_data(self, element_index: int):
         """
         Get the data for the given element index.
@@ -219,8 +219,13 @@ class VisualizationTab(QWidget):
         """
 
         configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_index), 1)
-        return ("Criterion 1" if configure_button.config_window is None
-                else configure_button.config_window.criterion_combo.currentText())
+        if configure_button.config_window:
+            text_combo = configure_button.config_window.criterion_combo.currentText()
+            if text_combo == "Criterion 2":
+                return Criterion.CRITERION_2
+            elif text_combo == "Criterion 3":
+                return Criterion.CRITERION_3
+        return Criterion.CRITERION_1
 
     def set_data(self, data):
         """
@@ -327,13 +332,8 @@ class VisualizationTab(QWidget):
             if checkbox.isChecked() != (state == Qt.Checked):
                 checkbox.setChecked(state)
 
-    def on_element_checkbox_changed(self, _):
-        """
-        Handles the element checkbox state change.
-
-        Args:
-            state: The state of the element checkbox.
-        """
+    def on_element_checkbox_changed(self):
+        """Handles the element checkbox state change."""
 
         num_checked = sum(checkbox.isChecked() for checkbox in self.elements_checkboxes)
         self.master_checkbox.setCheckState(Qt.Checked if num_checked == len(self.elements_checkboxes)

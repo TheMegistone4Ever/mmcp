@@ -65,7 +65,7 @@ class SolutionDisplayTab(QWidget):
         """
 
         self.solution = solution_data
-        self.text_edit.setPlainText(str(self.solution) if len(self.solution.names)
+        self.text_edit.setPlainText(str(self.solution) if len(self.solution.values)
                                     else "No optimal solution found.\nPlease check your input data.")
 
     def copy_to_clipboard(self):

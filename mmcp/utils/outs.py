@@ -25,3 +25,6 @@ def with_precision(value, precision=2) -> str:
             return val
 
     return dumps(format_value(value), indent=2)
+
+
+message = lambda name, dictionary: f"{name}:\n{with_precision(dictionary)}"

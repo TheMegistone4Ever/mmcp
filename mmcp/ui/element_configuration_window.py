@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogBut
                              QRadioButton)
 
 from mmcp.data import ModelData
-from mmcp.utils import ModelType
+from mmcp.utils import ModelType, Criterion
 
 
 class ElementConfigurationWindow(QDialog):
@@ -66,19 +66,28 @@ class ElementConfigurationWindow(QDialog):
         model_label = QLabel("Model:", self)
         model_layout.addWidget(model_label)
 
-        self.linear_model_1_radio = QRadioButton("Linear Model 1", self)
-        self.linear_model_2_radio = QRadioButton("Linear Model 2", self)
-        self.linear_model_3_radio = QRadioButton("Linear Model 3", self)
-        self.comb_model_radio = QRadioButton("Combinatorial Model", self)
+        self.linear_model_1_radio = QRadioButton(str(ModelType.LINEAR_MODEL_1), self)
+        self.linear_model_2_radio = QRadioButton(str(ModelType.LINEAR_MODEL_2), self)
+        self.linear_model_3_radio = QRadioButton(str(ModelType.LINEAR_MODEL_3), self)
+        self.comb_model_radio = QRadioButton(str(ModelType.COMBINATORIAL_MODEL), self)
 
+        self.criterion_combo = QComboBox(self)
         if self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_1):
             self.linear_model_1_radio.setChecked(True)
+            self.criterion_combo.addItems([
+                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
+            ])
         elif self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_2):
             self.linear_model_2_radio.setChecked(True)
+            self.criterion_combo.addItems([
+                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
+            ])
         elif self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_3):
             self.linear_model_3_radio.setChecked(True)
+            self.criterion_combo.addItems([str(Criterion.CRITERION_1)])
         elif self.element_data["model_types"] == int(ModelType.COMBINATORIAL_MODEL):
             self.comb_model_radio.setChecked(True)
+            self.criterion_combo.addItems([str(Criterion.CRITERION_1), str(Criterion.CRITERION_2)])
 
         model_layout.addWidget(self.linear_model_1_radio)
         model_layout.addWidget(self.linear_model_2_radio)
@@ -91,19 +100,16 @@ class ElementConfigurationWindow(QDialog):
         criterion_label = QLabel("Criterion:", self)
         criterion_layout.addWidget(criterion_label)
 
-        self.criterion_combo = QComboBox(self)
-        self.criterion_combo.addItems(["Criterion 1", "Criterion 2", "Criterion 3"])
-
         criterion_layout.addWidget(self.criterion_combo)
 
         self.linear_model_1_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type("Linear Model 1") if checked else None)
+            lambda checked: self.set_model_type(ModelType.LINEAR_MODEL_1) if checked else None)
         self.linear_model_2_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type("Linear Model 2") if checked else None)
+            lambda checked: self.set_model_type(ModelType.LINEAR_MODEL_2) if checked else None)
         self.linear_model_3_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type("Linear Model 3") if checked else None)
+            lambda checked: self.set_model_type(ModelType.LINEAR_MODEL_3) if checked else None)
         self.comb_model_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type("Combinatorial Model") if checked else None)
+            lambda checked: self.set_model_type(ModelType.COMBINATORIAL_MODEL) if checked else None)
 
         layout.addLayout(criterion_layout)
 
@@ -119,7 +125,7 @@ class ElementConfigurationWindow(QDialog):
         button_box.rejected.connect(self.reject)  # type: ignore
         layout.addWidget(button_box)
 
-    def set_model_type(self, model_type: str):
+    def set_model_type(self, model_type: ModelType):
         """
         Sets the model type and updates the available criteria.
 
@@ -129,19 +135,23 @@ class ElementConfigurationWindow(QDialog):
 
         self.master_data.set_model_type(self.element_index, model_type)
 
-        if model_type == "Linear Model 1":
+        if model_type == ModelType.LINEAR_MODEL_1:
             self.linear_model_1_radio.setChecked(True)
             self.criterion_combo.clear()
-            self.criterion_combo.addItems(["Criterion 1", "Criterion 2", "Criterion 3"])
-        elif model_type == "Linear Model 2":
+            self.criterion_combo.addItems([
+                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
+            ])
+        elif model_type == ModelType.LINEAR_MODEL_2:
             self.linear_model_2_radio.setChecked(True)
             self.criterion_combo.clear()
-            self.criterion_combo.addItems(["Criterion 1", "Criterion 2", "Criterion 3"])
-        elif model_type == "Linear Model 3":
+            self.criterion_combo.addItems([
+                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
+            ])
+        elif model_type == ModelType.LINEAR_MODEL_3:
             self.linear_model_3_radio.setChecked(True)
             self.criterion_combo.clear()
-            self.criterion_combo.addItems(["Criterion 1"])
-        elif model_type == "Combinatorial Model":
+            self.criterion_combo.addItems([str(Criterion.CRITERION_1)])
+        elif model_type == ModelType.COMBINATORIAL_MODEL:
             self.comb_model_radio.setChecked(True)
             self.criterion_combo.clear()
-            self.criterion_combo.addItems(["Criterion 1", "Criterion 2"])
+            self.criterion_combo.addItems([str(Criterion.CRITERION_1), str(Criterion.CRITERION_2)])

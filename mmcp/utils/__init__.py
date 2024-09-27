@@ -1,11 +1,10 @@
-from .ModelType import ModelType
-from .config import Vars, model_mapping, criterion_mapping
-from .outs import with_precision
+from .config import Vars, Criterion, ModelType
+from .outs import with_precision, message
 
 __all__ = [
-    "ModelType",
     "Vars",
-    "model_mapping",
-    "criterion_mapping",
+    "Criterion",
+    "ModelType",
     "with_precision",
+    "message",
 ]

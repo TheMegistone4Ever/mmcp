@@ -252,23 +252,26 @@ class VisualizationTab(QWidget):
 
             menu = QMenu(self)
             menu.addAction("Show")
-            linear_model_1_action = menu.addAction("Linear Model 1")
-            linear_model_2_action = menu.addAction("Linear Model 2")
-            combinatorial_model_action = menu.addAction("Combinatorial Model")
+            linear_model_1_action = menu.addAction(str(ModelType.LINEAR_MODEL_1))
+            linear_model_2_action = menu.addAction(str(ModelType.LINEAR_MODEL_2))
+            linear_model_3_action = menu.addAction(str(ModelType.LINEAR_MODEL_3))
+            combinatorial_model_action = menu.addAction(str(ModelType.COMBINATORIAL_MODEL))
 
             action = menu.exec_(self.tree_widget.mapToGlobal(pos))
 
+            model_type = None
             if action == linear_model_1_action:
-                self.open_configuration_window(element_index, "Linear Model 1")
+                model_type = ModelType.LINEAR_MODEL_1
             elif action == linear_model_2_action:
-                self.open_configuration_window(element_index, "Linear Model 2")
+                model_type = ModelType.LINEAR_MODEL_2
+            elif action == linear_model_3_action:
+                model_type = ModelType.LINEAR_MODEL_3
             elif action == combinatorial_model_action:
-                self.open_configuration_window(element_index, "Combinatorial Model")
-            else:
-                self.open_configuration_window(element_index, None)
+                model_type = ModelType.COMBINATORIAL_MODEL
+            self.open_configuration_window(element_index, model_type)
 
     # noinspection PyProtectedMember
-    def open_configuration_window(self, element_index, model_type):
+    def open_configuration_window(self, element_index, model_type: ModelType = None):
         """
         Opens the configuration window for the specified element index and model type.
 
@@ -294,11 +297,13 @@ class VisualizationTab(QWidget):
         if configure_button.config_window.exec_() == QDialog.Accepted:
             selected_model_type = None
             if configure_button.config_window.linear_model_1_radio.isChecked():
-                selected_model_type = "Linear Model 1"
+                selected_model_type = ModelType.LINEAR_MODEL_1
             elif configure_button.config_window.linear_model_2_radio.isChecked():
-                selected_model_type = "Linear Model 2"
+                selected_model_type = ModelType.LINEAR_MODEL_2
+            elif configure_button.config_window.linear_model_3_radio.isChecked():
+                selected_model_type = ModelType.LINEAR_MODEL_3
             elif configure_button.config_window.comb_model_radio.isChecked():
-                selected_model_type = "Combinatorial Model"
+                selected_model_type = ModelType.COMBINATORIAL_MODEL
 
             if selected_model_type is not None:
                 configure_button.config_window.set_model_type(selected_model_type)
@@ -322,7 +327,7 @@ class VisualizationTab(QWidget):
             if checkbox.isChecked() != (state == Qt.Checked):
                 checkbox.setChecked(state)
 
-    def on_element_checkbox_changed(self, state):
+    def on_element_checkbox_changed(self, _):
         """
         Handles the element checkbox state change.
 

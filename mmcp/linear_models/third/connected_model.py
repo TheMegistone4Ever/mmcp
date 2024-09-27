@@ -1,7 +1,7 @@
 from ortools.linear_solver import pywraplp
 
 
-def solve_connected_model(c_list, A_list, b_list, d_list, model_types, beta):
+def solve(c_list, A_list, b_list, d_list, model_types, beta):
     """
     Solves the connected model for the third linear model.
 

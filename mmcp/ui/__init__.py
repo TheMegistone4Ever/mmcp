@@ -7,5 +7,5 @@ __all__ = [
     "ElementConfigurationWindow",
     "LoadDataTab",
     "SolutionDisplayTab",
-    "VisualizationTab"
+    "VisualizationTab",
 ]

@@ -16,10 +16,7 @@ class ElementConfigurationWindow(QDialog):
 
         self.master_data = master_data
         self.criterion_combo = None
-        self.linear_model_1_radio = None
-        self.linear_model_2_radio = None
-        self.linear_model_3_radio = None
-        self.comb_model_radio = None
+        self.model_radio_buttons = list()
         self.setWindowTitle(f"Element {element_index + 1} Configuration")
         self.element_data = element_data
         self.element_index = element_index
@@ -67,52 +64,24 @@ class ElementConfigurationWindow(QDialog):
         model_label = QLabel("Model:", self)
         model_layout.addWidget(model_label)
 
-        self.linear_model_1_radio = QRadioButton(str(ModelType.LINEAR_MODEL_1), self)
-        self.linear_model_2_radio = QRadioButton(str(ModelType.LINEAR_MODEL_2), self)
-        self.linear_model_3_radio = QRadioButton(str(ModelType.LINEAR_MODEL_3), self)
-        self.comb_model_radio = QRadioButton(str(ModelType.COMBINATORIAL_MODEL), self)
-
-        self.criterion_combo = QComboBox(self)
-        if self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_1):
-            self.linear_model_1_radio.setChecked(True)
-            self.criterion_combo.addItems([
-                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
-            ])
-        elif self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_2):
-            self.linear_model_2_radio.setChecked(True)
-            self.criterion_combo.addItems([
-                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
-            ])
-        elif self.element_data["model_types"] == int(ModelType.LINEAR_MODEL_3):
-            self.linear_model_3_radio.setChecked(True)
-            self.criterion_combo.addItems([str(Criterion.CRITERION_1)])
-        elif self.element_data["model_types"] == int(ModelType.COMBINATORIAL_MODEL):
-            self.comb_model_radio.setChecked(True)
-            self.criterion_combo.addItems([str(Criterion.CRITERION_1), str(Criterion.CRITERION_2)])
-
-        model_layout.addWidget(self.linear_model_1_radio)
-        model_layout.addWidget(self.linear_model_2_radio)
-        model_layout.addWidget(self.linear_model_3_radio)
-        model_layout.addWidget(self.comb_model_radio)
+        for model_type in ModelType:
+            radio_button = QRadioButton(str(model_type), self)
+            self.model_radio_buttons.append(radio_button)
+            model_layout.addWidget(radio_button)
+            radio_button.toggled.connect(  # type: ignore
+                lambda checked, mt=model_type: self.set_model_type(mt) if checked else None)
 
         layout.addLayout(model_layout)
 
+        self.criterion_combo = QComboBox(self)
         criterion_layout = QHBoxLayout()
         criterion_label = QLabel("Criterion:", self)
         criterion_layout.addWidget(criterion_label)
-
         criterion_layout.addWidget(self.criterion_combo)
-
-        self.linear_model_1_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type(ModelType.LINEAR_MODEL_1) if checked else None)
-        self.linear_model_2_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type(ModelType.LINEAR_MODEL_2) if checked else None)
-        self.linear_model_3_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type(ModelType.LINEAR_MODEL_3) if checked else None)
-        self.comb_model_radio.toggled.connect(  # type: ignore
-            lambda checked: self.set_model_type(ModelType.COMBINATORIAL_MODEL) if checked else None)
-
         layout.addLayout(criterion_layout)
+
+        # Initial Model and Criterion Setup
+        self.set_model_type(ModelType(self.element_data["model_types"]))
 
         for key, value in self.element_data.items():
             label = QLabel(f"{key}:", self)
@@ -139,26 +108,17 @@ class ElementConfigurationWindow(QDialog):
         except AssertionError as e:
             raise ConfigurationError(f"Error setting model type ({model_type}): {e}") from e
 
-        current_criterion = self.criterion_combo.currentText()
-        if model_type == ModelType.LINEAR_MODEL_1:
-            self.linear_model_1_radio.setChecked(True)
-            self.criterion_combo.clear()
-            self.criterion_combo.addItems([
-                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
-            ])
-        elif model_type == ModelType.LINEAR_MODEL_2:
-            self.linear_model_2_radio.setChecked(True)
-            self.criterion_combo.clear()
-            self.criterion_combo.addItems([
-                str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)
-            ])
+        self.criterion_combo.clear()
+        if model_type in (ModelType.LINEAR_MODEL_1, ModelType.LINEAR_MODEL_2):
+            self.criterion_combo.addItems(
+                [str(Criterion.CRITERION_1), str(Criterion.CRITERION_2), str(Criterion.CRITERION_3)])
         elif model_type == ModelType.LINEAR_MODEL_3:
-            self.linear_model_3_radio.setChecked(True)
-            self.criterion_combo.clear()
             self.criterion_combo.addItems([str(Criterion.CRITERION_1)])
         elif model_type == ModelType.COMBINATORIAL_MODEL:
-            self.comb_model_radio.setChecked(True)
-            self.criterion_combo.clear()
             self.criterion_combo.addItems([str(Criterion.CRITERION_1), str(Criterion.CRITERION_2)])
-        if (index := self.criterion_combo.findText(current_criterion)) != -1:
-            self.criterion_combo.setCurrentIndex(index)
+
+        # Set the correct radio button as checked
+        for radio_button in self.model_radio_buttons:
+            if radio_button.text() == str(model_type):
+                radio_button.setChecked(True)
+                break

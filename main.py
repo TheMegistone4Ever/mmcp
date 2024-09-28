@@ -26,7 +26,7 @@ def main():
 
 
 # TODO: Logging, use: logging.basicConfig(...)
-# TODO: Change data generation to this: (Element 1 data), (Element 2 data), ...
+# TODO: Change data generation to this: (Element 1 data), (Element 2 data), ... & add criteria to the data generation
 
 if __name__ == "__main__":
     main()

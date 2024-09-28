@@ -108,23 +108,14 @@ class VisualizationTab(QWidget):
 
         self.tree_widget.clear()
         self.elements_checkboxes.clear()
-        # Remove master_checkbox from layout if it exists
-        if self.master_checkbox is not None:
-            self.checkbox_layout.removeWidget(self.master_checkbox)
-            self.master_checkbox.deleteLater()
+        self._remove_master_checkbox()
 
         if self.data.c is not None:
-            self.master_checkbox = QCheckBox("Select All", self)
-            self.master_checkbox.setChecked(True)
-            self.master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
-            self.checkbox_layout.addWidget(self.master_checkbox)
+            self._create_master_checkbox()
 
             for i in range(len(self.data.c)):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
-                for k, v in self.data._asdict().items():
-                    if len(v) > i:
-                        QTreeWidgetItem(element_item, [f"{k}: {str(ModelType(v[i]))
-                        if k == "model_types" else list(v)[i]}"])
+                self._add_element_data_to_tree(element_item, i)
 
                 checkbox = QCheckBox(f"Element {i + 1}", self)
                 checkbox.setChecked(True)
@@ -136,9 +127,34 @@ class VisualizationTab(QWidget):
                 configure_button.config_window = None
                 self.tree_widget.setItemWidget(element_item, 1, configure_button)
 
+    def _remove_master_checkbox(self):
+        """Removes the master checkbox from the layout if it exists."""
+
+        if self.master_checkbox is not None:
+            self.checkbox_layout.removeWidget(self.master_checkbox)
+            self.master_checkbox.deleteLater()
+            self.master_checkbox = None
+
+    def _create_master_checkbox(self):
+        """Creates and adds the master checkbox to the layout."""
+
+        self.master_checkbox = QCheckBox("Select All", self)
+        self.master_checkbox.setChecked(True)
+        self.master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
+        self.checkbox_layout.addWidget(self.master_checkbox)
+
+    # noinspection PyProtectedMember
+    def _add_element_data_to_tree(self, element_item, element_index):
+        """Adds element data to the tree widget item."""
+
+        for k, v in self.data._asdict().items():
+            if len(v) > element_index:
+                QTreeWidgetItem(element_item, [f"{k}: {str(ModelType(v[element_index]))
+                if k == 'model_types' else list(v)[element_index]}"])
+
     def solve(self):
         """
-        Solves the optimization problem for each element in the data.
+        Solves the optimization problem for each selected element.
         Displays the solution in the SolutionDisplayTab.
         """
 
@@ -146,16 +162,15 @@ class VisualizationTab(QWidget):
 
         try:
             for i, checkbox in enumerate(self.elements_checkboxes):
-                if not checkbox.isChecked():
-                    continue
-                try:
-                    solution = Solver(self.ith_data(i), self.selected_model_type(i), self.selected_criterion(i)).solve()
-                    if solution:
-                        solutions.values.append(solution)
-                    else:
-                        QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
-                except (ConfigurationError, ModelTypeError, CriterionError) as e:
-                    QMessageBox.critical(self, "Error", f"Failed to solve for Element {i + 1}. Error: {e}")
+                if checkbox.isChecked():
+                    try:
+                        solution = self._solve_for_element(i)
+                        if solution:
+                            solutions.values.append(solution)
+                        else:
+                            QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
+                    except (ConfigurationError, ModelTypeError, CriterionError) as e:
+                        QMessageBox.critical(self, "Error", f"Failed to solve for Element {i + 1}. Error: {e}")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
             print(f"Error: {e}")
@@ -163,6 +178,13 @@ class VisualizationTab(QWidget):
         finally:
             self.solution_display_tab.display_solution(solutions)
             self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
+
+    def _solve_for_element(self, element_index):
+        """Solves the optimization problem for a single element."""
+
+        return Solver(self.ith_data(element_index),
+                      self.selected_model_type(element_index),
+                      self.selected_criterion(element_index)).solve()
 
     # noinspection PyProtectedMember
     def ith_data(self, element_index: int):
@@ -176,65 +198,45 @@ class VisualizationTab(QWidget):
             The data for the element.
         """
 
-        element_data = dict()
-        for key, value in self.data._asdict().items():
-            if len(value) > element_index:
-                element_data[key] = list(value)[element_index]
-
-        return ModelData(**element_data)
+        return ModelData(**{k: v[element_index] for k, v in self.data._asdict().items() if len(v) > element_index})
 
     def selected_model_type(self, element_index):
         """
         Get the selected model type for the given element index.
-
-        Args:
-            element_index: The index of the element.
-
-        Returns:
-            The selected model type as a ModelType enum member.
         """
 
-        element_item = self.tree_widget.topLevelItem(element_index)
-        configure_button = self.tree_widget.itemWidget(element_item, 1)
-
-        if (config_window := configure_button.config_window) is None:
+        config_window = self._get_config_window(element_index)
+        if config_window is None:
             return ModelType.LINEAR_MODEL_1
 
-        if config_window.linear_model_1_radio.isChecked():
-            return ModelType.LINEAR_MODEL_1
-        elif config_window.linear_model_2_radio.isChecked():
-            return ModelType.LINEAR_MODEL_2
-        elif config_window.linear_model_3_radio.isChecked():
-            return ModelType.LINEAR_MODEL_3
-        elif config_window.comb_model_radio.isChecked():
-            return ModelType.COMBINATORIAL_MODEL
+        for model_type in ModelType:
+            if getattr(config_window, f"{"_".join(str(model_type).lower().split())}_radio").isChecked():
+                return model_type
 
     def selected_criterion(self, element_index):
         """
         Get the selected criterion for the given element index.
-
-        Args:
-            element_index: The index of the element.
-
-        Returns:
-            The selected criterion.
         """
 
-        configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_index), 1)
-        if configure_button.config_window:
-            text_combo = configure_button.config_window.criterion_combo.currentText()
-            if text_combo == str(Criterion.CRITERION_2):
-                return Criterion.CRITERION_2
-            elif text_combo == str(Criterion.CRITERION_3):
-                return Criterion.CRITERION_3
+        config_window = self._get_config_window(element_index)
+        if config_window:
+            text_combo = config_window.criterion_combo.currentText()
+            try:
+                return Criterion(text_combo)
+            except ValueError:
+                pass  # Fallback to default
         return Criterion.CRITERION_1
+
+    def _get_config_window(self, element_index):
+        """Gets the configuration window for the given element index."""
+
+        element_item = self.tree_widget.topLevelItem(element_index)
+        configure_button = self.tree_widget.itemWidget(element_item, 1)
+        return configure_button.config_window
 
     def set_data(self, data):
         """
         Sets the data for visualization.
-
-        Args:
-            data: The data to be visualized.
         """
 
         self.data = data
@@ -244,95 +246,66 @@ class VisualizationTab(QWidget):
     def show_context_menu(self, pos):
         """
         Shows a context menu for the tree widget items.
-
-        Args:
-            pos: The position of the context menu.
         """
 
         item = self.tree_widget.itemAt(pos)
         if item:
-            # Traverse up to the top-level item
-            while item.parent() is not None:
-                item = item.parent()
-
-            element_index = self.tree_widget.indexOfTopLevelItem(item)
+            element_index = self._get_element_index_from_tree_item(item)
 
             menu = QMenu(self)
-            menu.addAction("Show")
-            linear_model_1_action = menu.addAction(str(ModelType.LINEAR_MODEL_1))
-            linear_model_2_action = menu.addAction(str(ModelType.LINEAR_MODEL_2))
-            linear_model_3_action = menu.addAction(str(ModelType.LINEAR_MODEL_3))
-            combinatorial_model_action = menu.addAction(str(ModelType.COMBINATORIAL_MODEL))
+            show_action = menu.addAction("Show")
+            actions = {model_type: menu.addAction(str(model_type)) for model_type in ModelType}
 
             action = menu.exec_(self.tree_widget.mapToGlobal(pos))
 
-            model_type = None
-            if action == linear_model_1_action:
-                model_type = ModelType.LINEAR_MODEL_1
-            elif action == linear_model_2_action:
-                model_type = ModelType.LINEAR_MODEL_2
-            elif action == linear_model_3_action:
-                model_type = ModelType.LINEAR_MODEL_3
-            elif action == combinatorial_model_action:
-                model_type = ModelType.COMBINATORIAL_MODEL
-            self.open_configuration_window(element_index, model_type)
+            if action in actions.values():
+                model_type = next(model_type for model_type, act in actions.items() if act == action)
+                self.open_configuration_window(element_index, model_type)
+            elif action == show_action:
+                self.open_configuration_window(element_index)
+
+    def _get_element_index_from_tree_item(self, item):
+        """Gets the element index from the tree widget item."""
+
+        while item.parent() is not None:
+            item = item.parent()
+        return self.tree_widget.indexOfTopLevelItem(item)
 
     # noinspection PyProtectedMember
     def open_configuration_window(self, element_index, model_type: ModelType = None):
         """
-        Opens the configuration window for the specified element index and model type.
-
-        Args:
-            element_index: The index of the element.
-            model_type: The model type to set.
+        Opens the configuration window for the specified element.
         """
 
-        element_data = dict()
-        for key, value in self.data._asdict().items():
-            if len(value) > element_index:
-                element_data[key] = list(value)[element_index]
+        element_data = {k: list(v)[element_index] for k, v in self.data._asdict().items() if len(v) > element_index}
 
-        element_item = self.tree_widget.topLevelItem(element_index)
-        configure_button = self.tree_widget.itemWidget(element_item, 1)
+        config_window = self._get_config_window(element_index)
 
-        if not configure_button.config_window:
-            configure_button.config_window = ElementConfigurationWindow(self.data, element_data, element_index)
+        if not config_window:
+            config_window = ElementConfigurationWindow(self.data, element_data, element_index)
+            configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_index), 1)
+            configure_button.config_window = config_window
 
         if model_type:
-            configure_button.config_window.set_model_type(model_type)
+            config_window.set_model_type(model_type)
 
-        if configure_button.config_window.exec_() == QDialog.Accepted:
-            selected_model_type = None
-            if configure_button.config_window.linear_model_1_radio.isChecked():
-                selected_model_type = ModelType.LINEAR_MODEL_1
-            elif configure_button.config_window.linear_model_2_radio.isChecked():
-                selected_model_type = ModelType.LINEAR_MODEL_2
-            elif configure_button.config_window.linear_model_3_radio.isChecked():
-                selected_model_type = ModelType.LINEAR_MODEL_3
-            elif configure_button.config_window.comb_model_radio.isChecked():
-                selected_model_type = ModelType.COMBINATORIAL_MODEL
+        if config_window.exec_() == QDialog.Accepted:
+            self._update_tree_item(element_index)
 
-            if selected_model_type is not None:
-                configure_button.config_window.set_model_type(selected_model_type)
+    def _update_tree_item(self, element_index):
+        """Updates the tree widget item for the given element index."""
 
-            # Update the specific tree item instead of repopulating the entire tree
-            element_item.takeChildren()
-            for key, value in self.data._asdict().items():
-                if len(value) > element_index:
-                    QTreeWidgetItem(element_item, [f"{key}: {str(ModelType(value[element_index]))
-                    if key == "model_types" else list(value)[element_index]}"])
+        element_item = self.tree_widget.topLevelItem(element_index)
+        element_item.takeChildren()
+        self._add_element_data_to_tree(element_item, element_index)
 
     def on_master_checkbox_changed(self, state):
         """
         Handles the primary checkbox state change.
-
-        Args:
-            state: The state of the primary checkbox.
         """
 
         for checkbox in self.elements_checkboxes:
-            if checkbox.isChecked() != (state == Qt.Checked):
-                checkbox.setChecked(state)
+            checkbox.setChecked(state == Qt.Checked)
 
     def on_element_checkbox_changed(self):
         """Handles the element checkbox state change."""

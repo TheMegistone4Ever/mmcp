@@ -27,7 +27,6 @@ def main():
 
 # TODO: Error Handling, use: class ...(Exception): ...
 # TODO: Logging, use: logging.basicConfig(...)
-# TODO: Dependency, Configuration, and Environment Management, use: dotenv
 # TODO: Change data generation to this: (Element 1 data), (Element 2 data), ...
 
 if __name__ == "__main__":

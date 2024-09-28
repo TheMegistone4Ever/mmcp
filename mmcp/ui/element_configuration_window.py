@@ -139,6 +139,7 @@ class ElementConfigurationWindow(QDialog):
         except AssertionError as e:
             raise ConfigurationError(f"Error setting model type ({model_type}): {e}") from e
 
+        current_criterion = self.criterion_combo.currentText()
         if model_type == ModelType.LINEAR_MODEL_1:
             self.linear_model_1_radio.setChecked(True)
             self.criterion_combo.clear()
@@ -159,3 +160,5 @@ class ElementConfigurationWindow(QDialog):
             self.comb_model_radio.setChecked(True)
             self.criterion_combo.clear()
             self.criterion_combo.addItems([str(Criterion.CRITERION_1), str(Criterion.CRITERION_2)])
+        if (index := self.criterion_combo.findText(current_criterion)) != -1:
+            self.criterion_combo.setCurrentIndex(index)

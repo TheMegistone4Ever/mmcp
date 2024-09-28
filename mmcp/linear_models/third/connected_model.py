@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from ortools.linear_solver import pywraplp
 
 from mmcp.core import SolverError, ConfigurationError
@@ -18,6 +23,9 @@ def solve(c_list, A_list, b_list, d_list, model_types, beta):
     Returns:
         A list of optimal solution vectors for each element.
     """
+    logging.debug(f"Entering solve function in connected_model.py with: "
+                  f"c_list={c_list}, A_list={A_list}, b_list={b_list}, "
+                  f"d_list={d_list}, model_types={model_types}, beta={beta}")
 
     solver = pywraplp.Solver.CreateSolver("GLOP")
 
@@ -52,12 +60,16 @@ def solve(c_list, A_list, b_list, d_list, model_types, beta):
 
     solver_status = solver.Solve()
     if solver_status != pywraplp.Solver.OPTIMAL:
+        logging.error(f"Unable to find the optimal solution for the third linear model, connected model. "
+                      f"{solver_status=}")
         raise SolverError(f"Unable to find the optimal solution for the third linear model, connected model. "
-                          f"{solver_status = }")
+                          f"{solver_status=}")
 
     try:
         optimal_solutions = [[x.solution_value() for x in element_x] for element_x in x_list]
+        logging.info(f"Optimal solutions found for the connected model: {optimal_solutions}")
     except Exception as e:
+        logging.exception(f"Error extracting solution from solver (connected model): {e}")
         raise ConfigurationError(f"Error extracting solution from solver (connected model): {e}") from e
 
     return optimal_solutions

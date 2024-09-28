@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from typing import NamedTuple, List, Dict, Any
 
 from numpy import ndarray
@@ -6,6 +11,7 @@ from mmcp.utils import ModelType, message
 
 
 class LinearModelData(NamedTuple):
+    logging.debug(f"Initialized {__name__}")
     c: ndarray = None
     A: ndarray = None
     b: ndarray = None
@@ -17,6 +23,7 @@ class LinearModelData(NamedTuple):
 
 
 class CombinatorialModelData(NamedTuple):
+    logging.debug(f"Initialized {__name__}")
     processing_times: ndarray = None
     precedence_graph: Dict[int, ndarray] = None
     weights: ndarray = None
@@ -26,6 +33,7 @@ class CombinatorialModelData(NamedTuple):
 
 
 class ModelData(NamedTuple):
+    logging.debug(f"Initialized {__name__}")
     c: ndarray = None
     A: ndarray = None
     b: ndarray = None
@@ -35,23 +43,24 @@ class ModelData(NamedTuple):
     precedence_graph: Dict[int, ndarray] = None
     weights: ndarray = None
 
-    def set_model_type(self, element_index: int, model_type: ModelType):
+    def set_model_type(self, element_idx: int, model_type: ModelType):
         """
         Sets or updates the model_type for a specific element.
 
         Args:
-            element_index: The index of the element to update.
+            element_idx: The index of the element to update.
             model_type: The new model_type value.
         """
-
-        assert 0 <= element_index < len(self.model_types), f"Invalid element index: {element_index}"
-        self.model_types[element_index] = int(model_type)
+        logging.debug(f"Setting model type for element {element_idx} to {model_type}")
+        assert 0 <= element_idx < len(self.model_types), f"Invalid element index: {element_idx}"
+        self.model_types[element_idx] = int(model_type)
 
     def __repr__(self) -> str:
         return message("Model Data", self._asdict())
 
 
 class SolutionData(NamedTuple):
+    logging.debug(f"Initialized {__name__}")
     values: List[Any] = list()
 
     def __repr__(self) -> str:

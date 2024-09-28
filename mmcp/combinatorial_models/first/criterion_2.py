@@ -1,7 +1,13 @@
+import logging
+
+from mmcp.utils import Vars
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from ortools.linear_solver import pywraplp
 
 from mmcp.core import SolverError
-from mmcp.utils import Vars
 
 
 def solve(processing_times, precedence_graph, initial_weights, target_differences):
@@ -17,6 +23,11 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
     Returns:
         A list of job completion times (approximation).
     """
+    logging.debug(f"Entering solve function in criterion_2.py with: "
+                  f"processing_times={processing_times}, "
+                  f"precedence_graph={precedence_graph}, "
+                  f"initial_weights={initial_weights}, "
+                  f"target_differences={target_differences}")
 
     num_jobs = len(processing_times) if isinstance(processing_times, list) else 1
     weights = initial_weights.copy()
@@ -43,6 +54,7 @@ def solve(processing_times, precedence_graph, initial_weights, target_difference
                 weights[i] += Vars.dW
                 weights[j] -= Vars.dW
 
+    logging.info(f"Completion times calculated: {completion_times}")
     return completion_times
 
 
@@ -59,6 +71,10 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
     Returns:
         A list of job completion times (approximation).
     """
+    logging.debug(f"Entering solve_weighted_completion_time function with: "
+                  f"processing_times={processing_times}, "
+                  f"precedence_graph={precedence_graph}, "
+                  f"weights={weights}, M={M}")
 
     num_jobs = len(processing_times)
     solver = pywraplp.Solver.CreateSolver("GLOP")
@@ -72,10 +88,10 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
     # Non-overlap constraints (simplified for LP relaxation)
     for j in range(num_jobs):
         for k in range(j + 1, num_jobs):
-            solver.Add(completion_times[j] >= completion_times[k] + processing_times[j] - M * (
-                    1 - solver.IntVar(0, 1, f"y_{j}_{k}")))
-            solver.Add(completion_times[k] >= completion_times[j] + processing_times[k] - M * solver.IntVar(0, 1,
-                                                                                                            f"y_{j}_{k}"))
+            solver.Add(completion_times[j] >= completion_times[k] + processing_times[j]
+                       - M * (1 - solver.IntVar(0, 1, f"y_{j}_{k}")))
+            solver.Add(completion_times[k] >= completion_times[j] + processing_times[k]
+                       - M * solver.IntVar(0, 1, f"y_{j}_{k}"))
 
     # Objective: Minimize weighted completion times
     objective = solver.Objective()
@@ -86,7 +102,11 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
     solver_status = solver.Solve()
 
     if solver_status != pywraplp.Solver.OPTIMAL:
+        logging.error(f"Unable to find the optimal solution for the combinatorial model, second criterion. "
+                      f"{solver_status=}")
         raise SolverError(f"Unable to find the optimal solution for the combinatorial model, second criterion. "
-                          f"{solver_status = }")
+                          f"{solver_status=}")
 
-    return [c.solution_value() for c in completion_times]
+    completion_times_values = [c.solution_value() for c in completion_times]
+    logging.debug(f"Completion times calculated (inner function): {completion_times_values}")
+    return completion_times_values

@@ -1,4 +1,8 @@
+import logging
 import sys
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon
@@ -9,6 +13,8 @@ from mmcp.ui import LoadDataTab, VisualizationTab, SolutionDisplayTab
 
 
 class CustomTabBar(QTabBar):
+    logging.debug(f"Initialized {__name__}")
+
     def tabSizeHint(self, index):
         """
         Override the tab size hint to set a custom width.
@@ -19,7 +25,10 @@ class CustomTabBar(QTabBar):
 
 
 class MainWindow(QMainWindow):
+    logging.debug(f"Initialized {__name__}")
+
     def __init__(self):
+        logging.debug("Initializing MainWindow.")
         super().__init__()
 
         self.setWindowTitle("Binary Production System Optimization")
@@ -77,12 +86,14 @@ class MainWindow(QMainWindow):
 
     def handle_data_loaded(self, data: ModelData):
         """Handle the data loaded signal from the LoadDataTab."""
+        logging.debug("Data loaded signal received in MainWindow.")
 
         if len(data.c) < 2:
+            logging.error("At least 2 elements are required.")
             QMessageBox.critical(self, "Error", "At least 2 elements are required.")
-            print("At least 2 elements are required.")
             return
 
+        logging.debug("Passing data to VisualizationTab.")
         self.visualization_tab.set_data(data)
         self.tab_widget.setCurrentIndex(1)  # Switch to Visualization tab
 

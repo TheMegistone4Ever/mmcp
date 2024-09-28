@@ -1,16 +1,27 @@
+import logging
+
+from mmcp.utils import Vars
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from mmcp.core import Model, ModelTypeError, CriterionError
-from mmcp.utils import Vars, ModelType, Criterion
+from mmcp.utils import ModelType, Criterion
 from .. import linear_models as lm, combinatorial_models as cm
 
 
 class Solver:
+    logging.debug(f"Initialized {__name__}")
+
     def __init__(self, data, model_type: ModelType, criterion_type: Criterion):
+        logging.debug(f"Initializing Solver with data={data}, model_type={model_type}, criterion_type={criterion_type}")
         self.data = data
         self.model = self._create_model(model_type)
         self.criterion_type = criterion_type
 
     @staticmethod
     def _create_model(model_type: ModelType) -> Model:
+        logging.debug(f"Creating model of type: {model_type}")
         if model_type == ModelType.LINEAR_MODEL_1:
             return LinearModel1()
         elif model_type == ModelType.LINEAR_MODEL_2:
@@ -20,14 +31,19 @@ class Solver:
         elif model_type == ModelType.COMBINATORIAL_MODEL:
             return CombinatorialModel()
         else:
+            logging.error(f"Invalid model type: {model_type}")
             raise ModelTypeError(f"Invalid model type: {model_type}")
 
     def solve(self):
+        logging.debug(f"Solving model with criterion: {self.criterion_type}")
         return self.model.solve(self.criterion_type, self.data)
 
 
 class LinearModel1(Model):
+    logging.debug(f"Initialized {__name__}")
+
     def solve(self, criterion: Criterion, data, **kwargs):
+        logging.debug(f"Solving LinearModel1 with criterion: {criterion}")
         if criterion == Criterion.CRITERION_1:
             return lm.first.criterion_1.solve(data.c, data.A, data.b, Vars.M)
         elif criterion == Criterion.CRITERION_2:
@@ -35,11 +51,15 @@ class LinearModel1(Model):
         elif criterion == Criterion.CRITERION_3:
             return lm.first.criterion_3.solve(data.c, data.A, data.b, Vars.weights)
         else:
+            logging.error(f"Unsupported criterion for Linear Model 1: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Linear Model 1: {str(criterion)}")
 
 
 class LinearModel2(Model):
+    logging.debug(f"Initialized {__name__}")
+
     def solve(self, criterion: Criterion, data, **kwargs):
+        logging.debug(f"Solving LinearModel2 with criterion: {criterion}")
         if criterion == Criterion.CRITERION_1:
             return lm.second.criterion_1.solve(data.c, data.A, data.b, data.d, Vars.M)
         elif criterion == Criterion.CRITERION_2:
@@ -47,23 +67,32 @@ class LinearModel2(Model):
         elif criterion == Criterion.CRITERION_3:
             return lm.second.criterion_3.solve(data.c, data.A, data.b, data.d, Vars.weights)
         else:
+            logging.error(f"Unsupported criterion for Linear Model 2: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Linear Model 2: {str(criterion)}")
 
 
 class LinearModel3(Model):
+    logging.debug(f"Initialized {__name__}")
+
     def solve(self, criterion: Criterion, data, **kwargs):
+        logging.debug(f"Solving LinearModel3 with criterion: {criterion}")
         if criterion == Criterion.CRITERION_1:
             return lm.third.connected_model.solve(data.c, data.A, data.b, data.d, data.model_types, Vars.beta)
         else:
+            logging.error(f"Unsupported criterion for Linear Model 3: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Linear Model 3: {str(criterion)}")
 
 
 class CombinatorialModel(Model):
+    logging.debug(f"Initialized {__name__}")
+
     def solve(self, criterion: Criterion, data, **kwargs):
+        logging.debug(f"Solving CombinatorialModel with criterion: {criterion}")
         if criterion == Criterion.CRITERION_1:
             return cm.first.criterion_1.solve(data.processing_times, data.precedence_graph, data.weights, Vars.M)
         elif criterion == Criterion.CRITERION_2:
             return cm.first.criterion_2.solve(data.processing_times, data.precedence_graph, data.weights,
                                               Vars.target_difference)
         else:
+            logging.error(f"Unsupported criterion for Combinatorial Model: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Combinatorial Model: {str(criterion)}")

@@ -1,5 +1,6 @@
 # User-defined files and directories
 docs/
+logs/
 *.json
 
 # Byte-compiled / optimized / DLL files

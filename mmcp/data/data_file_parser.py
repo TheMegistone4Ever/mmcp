@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from codecs import open as codecs_open
 from json import load
 
@@ -6,7 +11,7 @@ from numpy import array, set_printoptions
 from mmcp.core import FileSavingError, DataParsingError, DataValidationError
 from mmcp.data import ModelData
 
-type_error = lambda key, expected_type: f"❌ Incorrect data type for '{key}'! Expected {expected_type}."
+type_error = lambda key, expected_type: f"❌ Incorrect data type for \"{key}\"! Expected {expected_type}."
 
 
 def parse_data_json_file(filename):
@@ -24,19 +29,24 @@ def parse_data_json_file(filename):
         DataValidationError: If the parsed data fails validation checks.
         TypeError: If the data types are incorrect.
     """
+    logging.debug(f"Entering parse_data_json_file function with filename: {filename}")
 
     try:
-        with codecs_open(filename, 'r', encoding='utf-8') as f:
+        with codecs_open(filename, "r", encoding="utf-8") as f:
             data = load(f)
+            logging.debug(f"JSON file {filename} loaded successfully.")
     except OSError as e:
+        logging.exception(f"Error opening JSON file: {e}")
         raise FileSavingError(f"Error opening JSON file: {e}") from e
     except ValueError as e:
+        logging.exception(f"Error parsing JSON file: {e}")
         raise DataParsingError(f"Error parsing JSON file: {e}") from e
 
     try:
         for key in ["c", "A", "b", "d", "model_types", "processing_times", "precedence_graph", "weights"]:
             if key not in data:
-                raise DataValidationError(f"Missing key '{key}' in the JSON data.")
+                logging.error(f"Missing key \"{key}\" in the JSON data.")
+                raise DataValidationError(f"Missing key \"{key}\" in the JSON data.")
 
         # --- Dimension and Type Checks ---
         num_elements = len(data["c"])
@@ -130,10 +140,12 @@ def parse_data_json_file(filename):
             precedence_graph={key: array(value) for key, value in data["precedence_graph"].items()},
             weights=array(data["weights"])
         )
+        logging.info(f"Model data parsed and validated successfully from {filename}.")
 
         return model_data
 
     except (ValueError, TypeError) as e:
+        logging.exception(f"Error validating data: {e}")
         raise DataValidationError(f"Error validating data: {e}") from e
 
 

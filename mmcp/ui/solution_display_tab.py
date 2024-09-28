@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout
 
 from mmcp.core import FileSavingError
@@ -5,7 +10,10 @@ from mmcp.data import generate_data_json_file, SolutionData
 
 
 class SolutionDisplayTab(QWidget):
+    logging.debug(f"Initialized {__name__}")
+
     def __init__(self):
+        logging.debug("Initializing SolutionDisplayTab.")
         super().__init__()
 
         self.save_button = None
@@ -64,6 +72,7 @@ class SolutionDisplayTab(QWidget):
         Args:
             solution_data: The solution data to display.
         """
+        logging.debug("Displaying solution in SolutionDisplayTab.")
 
         self.solution = solution_data
         self.text_edit.setPlainText(str(self.solution) if len(self.solution.values)
@@ -73,7 +82,7 @@ class SolutionDisplayTab(QWidget):
         """
         Copies the content of the QTextEdit to the clipboard.
         """
-
+        logging.debug("Copying solution to clipboard.")
         self.text_edit.selectAll()
         self.text_edit.copy()
 
@@ -85,7 +94,7 @@ class SolutionDisplayTab(QWidget):
             filename: The default filename.
             extension: The file extension (e.g., ".json").
         """
-
+        logging.debug(f"Setting default filename to: {filename}{extension}")
         assert extension.startswith("."), "Extension must start with a dot."
 
         if not filename.endswith(extension):
@@ -97,16 +106,22 @@ class SolutionDisplayTab(QWidget):
         """
         Saves the content of the QTextEdit to a .json file.
         """
+        logging.debug("Saving solution to file.")
 
         options = QFileDialog.Options()
         save_filter = "JSON Files (*.json)"
         filename, _ = QFileDialog.getSaveFileName(self, "Save Solution", self.filename, save_filter, options=options)
         if filename:
+            logging.debug(f"Saving solution to: {filename}")
             try:
                 generate_data_json_file(filename, data=self.solution)
+                logging.info(f"Solution saved to: {filename}")
+                QMessageBox.information(self, "Success", "File saved successfully.")
             except FileSavingError as e:
+                logging.exception(f"Failed to save file: {e}")
                 QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
             else:
+                logging.info(f"Solution saved to: {filename}")
                 QMessageBox.information(self, "Success", "File saved successfully.")
             finally:
                 self.filename = filename

@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from numpy import set_printoptions, arange
 from numpy.random import seed, rand, randint, choice
 
@@ -19,16 +24,19 @@ def generate_linear_model_data(num_elements=5, num_vars=50) -> LinearModelData:
     Returns:
         A LinearModelData object containing the generated data.
     """
+    logging.debug(f"Entering generate_linear_model_data with num_elements={num_elements}, num_vars={num_vars}")
 
     d = [rand(num_vars) if rand() < .5 else None for _ in range(num_elements)]
 
-    return LinearModelData(
+    data = LinearModelData(
         c=rand(num_elements, num_vars),
         A=rand(num_elements, num_vars, num_vars),
         b=rand(num_elements, num_vars),
         d=d,
         model_types=randint(int(ModelType.LINEAR_MODEL_1), int(ModelType.COMBINATORIAL_MODEL) + 1, num_elements),
     )
+    logging.info(f"Generated linear model data: {data}")
+    return data
 
 
 def generate_combinatorial_model_data(num_vars=50, num_jobs=50) -> CombinatorialModelData:
@@ -42,8 +50,9 @@ def generate_combinatorial_model_data(num_vars=50, num_jobs=50) -> Combinatorial
     Returns:
         A CombinatorialModelData object containing the generated data.
     """
+    logging.debug(f"Entering generate_combinatorial_model_data with num_vars={num_vars}, num_jobs={num_jobs}")
 
-    return CombinatorialModelData(
+    data = CombinatorialModelData(
         processing_times=randint(1, num_jobs, num_vars),
         precedence_graph={
             j: choice(arange(j), size=randint(0, min(j, 5)), replace=False)
@@ -51,6 +60,8 @@ def generate_combinatorial_model_data(num_vars=50, num_jobs=50) -> Combinatorial
         },
         weights=rand(num_vars, num_jobs),
     )
+    logging.info(f"Generated combinatorial model data: {data}")
+    return data
 
 
 def generate_model_data(num_elements=5, num_vars=50, num_jobs=50) -> ModelData:
@@ -65,13 +76,16 @@ def generate_model_data(num_elements=5, num_vars=50, num_jobs=50) -> ModelData:
     Returns:
         A ModelData object containing the generated data.
     """
+    logging.debug(
+        f"Entering generate_model_data with num_elements={num_elements}, num_vars={num_vars}, num_jobs={num_jobs}")
 
-    return ModelData(
+    data = ModelData(
         *generate_linear_model_data(num_elements, num_vars),
         *generate_combinatorial_model_data(num_vars, num_jobs),
     )
+    logging.info(f"Generated model data: {data}")
+    return data
 
 
 if __name__ == "__main__":
-    data = generate_model_data()
-    print(data)
+    print(generate_model_data())

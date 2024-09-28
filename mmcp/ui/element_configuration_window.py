@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QHBoxLayout, QComboBox,
                              QRadioButton)
 
@@ -7,19 +12,22 @@ from mmcp.utils import ModelType, Criterion
 
 
 class ElementConfigurationWindow(QDialog):
-    def __init__(self, master_data: ModelData, element_data, element_index):
+    logging.debug(f"Initialized {__name__}")
+
+    def __init__(self, master_data: ModelData, element_data, element_idx):
         """
         Initializes the element configuration window.
         """
+        logging.debug(f"Initializing ElementConfigurationWindow for element {element_idx + 1}.")
 
         super().__init__()
 
         self.master_data = master_data
         self.criterion_combo = None
         self.model_radio_buttons = list()
-        self.setWindowTitle(f"Element {element_index + 1} Configuration")
+        self.setWindowTitle(f"Element {element_idx + 1} Configuration")
         self.element_data = element_data
-        self.element_index = element_index
+        self.element_idx = element_idx
 
         self.init_ui()
 
@@ -102,10 +110,11 @@ class ElementConfigurationWindow(QDialog):
         Args:
             model_type: The model type to set.
         """
-
+        logging.debug(f"Setting model type to {model_type} for element {self.element_idx + 1}")
         try:
-            self.master_data.set_model_type(self.element_index, model_type)
+            self.master_data.set_model_type(self.element_idx, model_type)
         except AssertionError as e:
+            logging.exception(f"Error setting model type ({model_type}): {e}")
             raise ConfigurationError(f"Error setting model type ({model_type}): {e}") from e
 
         self.criterion_combo.clear()

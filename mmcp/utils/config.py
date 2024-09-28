@@ -2,10 +2,12 @@
 This module contains the configuration for the models and the criteria.
 """
 
+import logging
 from enum import Enum
 
 
 class Vars:
+    logging.debug(f"Initialized {__name__}")
     beta = .5
     M = 1000
     alpha = .9
@@ -16,7 +18,14 @@ class Vars:
     tolerance = .001
 
 
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+logging.debug(f"Initialized {__name__}")
+
+
 class Criterion(Enum):
+    logging.debug(f"Initialized {__name__}")
     CRITERION_1 = 1
     CRITERION_2 = 2
     CRITERION_3 = 3
@@ -29,6 +38,7 @@ class Criterion(Enum):
 
 
 class ModelType(Enum):
+    logging.debug(f"Initialized {__name__}")
     LINEAR_MODEL_1 = 1
     LINEAR_MODEL_2 = 2
     LINEAR_MODEL_3 = 3

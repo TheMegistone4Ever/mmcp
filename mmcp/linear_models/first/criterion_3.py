@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 from ortools.linear_solver import pywraplp
 
 from mmcp.core import SolverError
@@ -18,6 +23,8 @@ def solve(c, A, b, weights):
             - The optimal solution vector x.
             - The optimal objective value.
     """
+    logging.debug(f"Entering solve function in criterion_3.py (linear_models/first) with: "
+                  f"c={c}, A={A}, b={b}, weights={weights}")
 
     solver = pywraplp.Solver.CreateSolver("GLOP")
 
@@ -46,8 +53,10 @@ def solve(c, A, b, weights):
         solver_status = solver.Solve()
 
         if solver_status != pywraplp.Solver.OPTIMAL:
+            logging.error(f"Unable to find the optimal solution for the first linear model, third criterion. "
+                          f"{solver_status=}, {iteration=}")
             raise SolverError(f"Unable to find the optimal solution for the first linear model, third criterion. "
-                              f"{solver_status = }, {iteration = }")
+                              f"{solver_status=}, {iteration=}")
 
         z_current = objective.Value()
 
@@ -60,6 +69,8 @@ def solve(c, A, b, weights):
 
     optimal_x = [x[i].solution_value() for i in range(num_vars)]
     optimal_objective = objective.Value()
+    logging.info(f"Optimal solution found for the first linear model, third criterion: "
+                 f"x={optimal_x}, objective={optimal_objective}")
 
     return optimal_x, optimal_objective
 
@@ -75,6 +86,7 @@ def update_weights(weights, x):
     Returns:
         Updated weights.
     """
+    logging.debug(f"Updating weights in criterion_3.py (linear_models/first) with weights={weights}, x={x}")
 
     # Update weights based on the current solution
     weights = [w * xi.solution_value() for w, xi in zip(weights, x)]
@@ -82,5 +94,6 @@ def update_weights(weights, x):
     # normalization to not blow up the weights
     total = sum(weights)
     weights = [w / total for w in weights if total != 0]
+    logging.debug(f"Updated weights: {weights}")
 
     return weights

@@ -1,16 +1,24 @@
+import logging
+
+logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
+
 class BaseCustomError(Exception):
     """
     Base class for all custom exceptions.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class DataParsingError(BaseCustomError):
     """
-    Raised when there's an error parsing the data file.
+    Raised when there"s an error parsing the data file.
 
     This exception is triggered when the input data file cannot be
     correctly parsed, typically due to formatting issues or corrupted content.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class DataValidationError(BaseCustomError):
@@ -20,6 +28,7 @@ class DataValidationError(BaseCustomError):
     This occurs when the parsed data fails to meet the required structure
     or contains invalid values according to the validation logic.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class ModelTypeError(BaseCustomError):
@@ -29,6 +38,7 @@ class ModelTypeError(BaseCustomError):
     This exception is used when the provided model type doesn't match
     any of the recognized or supported model types.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class CriterionError(BaseCustomError):
@@ -38,6 +48,7 @@ class CriterionError(BaseCustomError):
     This exception is thrown when a given criterion for solving
     the optimization problem is invalid or unrecognized.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class SolverError(BaseCustomError):
@@ -47,15 +58,17 @@ class SolverError(BaseCustomError):
     This occurs if the solver encounters an issue, such as
     convergence problems, numerical instability, or invalid inputs.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class ConfigurationError(BaseCustomError):
     """
     Raised when an error occurs during element configuration.
 
-    Thrown when the system or components can't be configured properly
+    Thrown when the system or components can"t be configured properly
     due to missing parameters, incorrect settings, or dependency issues.
     """
+    logging.debug(f"Initialized {__name__}")
 
 
 class FileSavingError(BaseCustomError):
@@ -65,3 +78,4 @@ class FileSavingError(BaseCustomError):
     This exception is triggered if the system fails to save the results
     to a file, due to I/O errors, permission issues, or invalid paths.
     """
+    logging.debug(f"Initialized {__name__}")

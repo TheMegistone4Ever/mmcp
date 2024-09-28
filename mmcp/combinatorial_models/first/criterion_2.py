@@ -1,5 +1,6 @@
 from ortools.linear_solver import pywraplp
 
+from mmcp.core import SolverError
 from mmcp.utils import Vars
 
 
@@ -82,5 +83,10 @@ def solve_weighted_completion_time(processing_times, precedence_graph, weights, 
         objective.SetCoefficient(completion_times[j], weights[j])
     objective.SetMinimization()
 
-    solver.Solve()
+    solver_status = solver.Solve()
+
+    if solver_status != pywraplp.Solver.OPTIMAL:
+        raise SolverError(f"Unable to find the optimal solution for the combinatorial model, second criterion. "
+                          f"{solver_status = }")
+
     return [c.solution_value() for c in completion_times]

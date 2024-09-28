@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu,
                              QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
 
-from mmcp.core import Solver
+from mmcp.core import Solver, ConfigurationError, ModelTypeError, CriterionError
 from mmcp.data import ModelData, SolutionData
 from mmcp.ui import ElementConfigurationWindow
 from mmcp.utils import ModelType, Criterion
@@ -148,14 +148,16 @@ class VisualizationTab(QWidget):
             for i, checkbox in enumerate(self.elements_checkboxes):
                 if not checkbox.isChecked():
                     continue
-                solution = Solver(self.ith_data(i), self.selected_model_type(i), self.selected_criterion(i)).solve()
-                if solution:
-                    solutions.values.append(solution)
-                else:
-                    QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
-
+                try:
+                    solution = Solver(self.ith_data(i), self.selected_model_type(i), self.selected_criterion(i)).solve()
+                    if solution:
+                        solutions.values.append(solution)
+                    else:
+                        QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
+                except (ConfigurationError, ModelTypeError, CriterionError) as e:
+                    QMessageBox.critical(self, "Error", f"Failed to solve for Element {i + 1}. Error: {e}")
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
+            QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
             print(f"Error: {e}")
 
         finally:
@@ -221,9 +223,9 @@ class VisualizationTab(QWidget):
         configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_index), 1)
         if configure_button.config_window:
             text_combo = configure_button.config_window.criterion_combo.currentText()
-            if text_combo == "Criterion 2":
+            if text_combo == str(Criterion.CRITERION_2):
                 return Criterion.CRITERION_2
-            elif text_combo == "Criterion 3":
+            elif text_combo == str(Criterion.CRITERION_3):
                 return Criterion.CRITERION_3
         return Criterion.CRITERION_1
 

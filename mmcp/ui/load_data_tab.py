@@ -73,7 +73,7 @@ class LoadDataTab(QWidget):
                     self.data_loaded.emit(data)  # type: ignore
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"An error occurred: {e}")
-                print(f"Error: {e}")
+                print(f"An error occurred while parsing the data file: {e}")
 
 
 if __name__ == "__main__":

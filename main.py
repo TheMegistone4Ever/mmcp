@@ -25,7 +25,6 @@ def main():
     print(f"Approximate completion times for the combinatorial model: {approximate_completion_times}")
 
 
-# TODO: Error Handling, use: class ...(Exception): ...
 # TODO: Logging, use: logging.basicConfig(...)
 # TODO: Change data generation to this: (Element 1 data), (Element 2 data), ...
 

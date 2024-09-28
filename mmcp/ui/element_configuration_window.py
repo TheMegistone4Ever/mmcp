@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QHBoxLayout, QComboBox,
                              QRadioButton)
 
+from mmcp.core import ConfigurationError
 from mmcp.data import ModelData
 from mmcp.utils import ModelType, Criterion
 
@@ -133,7 +134,10 @@ class ElementConfigurationWindow(QDialog):
             model_type: The model type to set.
         """
 
-        self.master_data.set_model_type(self.element_index, model_type)
+        try:
+            self.master_data.set_model_type(self.element_index, model_type)
+        except AssertionError as e:
+            raise ConfigurationError(f"Error setting model type ({model_type}): {e}") from e
 
         if model_type == ModelType.LINEAR_MODEL_1:
             self.linear_model_1_radio.setChecked(True)

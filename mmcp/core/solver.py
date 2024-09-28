@@ -1,6 +1,6 @@
-from mmcp import lm, cm
-from mmcp.core import Model
+from mmcp.core import Model, ModelTypeError, CriterionError
 from mmcp.utils import Vars, ModelType, Criterion
+from .. import linear_models as lm, combinatorial_models as cm
 
 
 class Solver:
@@ -20,7 +20,7 @@ class Solver:
         elif model_type == ModelType.COMBINATORIAL_MODEL:
             return CombinatorialModel()
         else:
-            raise ValueError(f"Invalid model type: {model_type}")
+            raise ModelTypeError(f"Invalid model type: {model_type}")
 
     def solve(self):
         return self.model.solve(self.criterion_type, self.data)
@@ -35,7 +35,7 @@ class LinearModel1(Model):
         elif criterion == Criterion.CRITERION_3:
             return lm.first.criterion_3.solve(data.c, data.A, data.b, Vars.weights)
         else:
-            raise ValueError(f"Unsupported criterion for Linear Model 1: {type(criterion)}")
+            raise CriterionError(f"Unsupported criterion for Linear Model 1: {str(criterion)}")
 
 
 class LinearModel2(Model):
@@ -47,7 +47,7 @@ class LinearModel2(Model):
         elif criterion == Criterion.CRITERION_3:
             return lm.second.criterion_3.solve(data.c, data.A, data.b, data.d, Vars.weights)
         else:
-            raise ValueError(f"Unsupported criterion for Linear Model 2: {str(criterion)}")
+            raise CriterionError(f"Unsupported criterion for Linear Model 2: {str(criterion)}")
 
 
 class LinearModel3(Model):
@@ -55,7 +55,7 @@ class LinearModel3(Model):
         if criterion == Criterion.CRITERION_1:
             return lm.third.connected_model.solve(data.c, data.A, data.b, data.d, data.model_types, Vars.beta)
         else:
-            raise ValueError(f"Unsupported criterion for Linear Model 3: {str(criterion)}")
+            raise CriterionError(f"Unsupported criterion for Linear Model 3: {str(criterion)}")
 
 
 class CombinatorialModel(Model):
@@ -66,4 +66,4 @@ class CombinatorialModel(Model):
             return cm.first.criterion_2.solve(data.processing_times, data.precedence_graph, data.weights,
                                               Vars.target_difference)
         else:
-            raise ValueError(f"Unsupported criterion for Combinatorial Model: {str(criterion)}")
+            raise CriterionError(f"Unsupported criterion for Combinatorial Model: {str(criterion)}")

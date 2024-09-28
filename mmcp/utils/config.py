@@ -5,9 +5,6 @@ This module contains the configuration for the models and the criteria.
 from enum import Enum
 
 
-# from ..combinatorial_models import first as cm_first
-# from ..linear_models import first, second, third
-
 class Vars:
     beta = .5
     M = 1000
@@ -45,33 +42,3 @@ class ModelType(Enum):
 
     def __repr__(self):
         return self.name.replace("_", " ").capitalize()
-#
-#
-#
-# model_mapping = {
-#     "Linear Model 1": first,
-#     "Linear Model 2": second,
-#     "Linear Model 3": third,
-#     "Combinatorial Model": cm_first,
-# }
-#
-# model_mapping = {
-#     str(ModelType.LINEAR_MODEL_1): first,
-#     str(ModelType.LINEAR_MODEL_2): second,
-#     str(ModelType.LINEAR_MODEL_3): third,
-#     str(ModelType.COMBINATORIAL_MODEL): cm_first,
-# }
-#
-# criterion_mapping = {
-#     "Criterion 1": "criterion_1",
-#     "Criterion 2": "criterion_2",
-#     "Criterion 3": "criterion_3",
-# }
-#
-# criterion_mapping = {
-#     str(Criterion.CRITERION_1): "criterion_1",
-#     str(Criterion.CRITERION_2): "criterion_2",
-#     str(Criterion.CRITERION_3): "criterion_3",
-# }
-#
-#

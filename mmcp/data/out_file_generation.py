@@ -3,6 +3,7 @@ from json import dump, load
 
 from numpy import ndarray
 
+from mmcp.core import FileSavingError
 from mmcp.data import generate_model_data
 from mmcp.utils import with_precision
 
@@ -37,7 +38,10 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, 
             dict_data[key] = [item.tolist() if isinstance(item, ndarray) else item for item in value]
 
     with codecs_open(filename, "w", encoding="utf-8") as f:
-        dump(dict_data, f, separators=(",", ":"), indent=2)
+        try:
+            dump(dict_data, f, separators=(",", ":"), indent=2)
+        except OSError as e:
+            raise FileSavingError(f"Error saving data to JSON file: {e}") from e
 
     print(f"Generated data file (JSON): {filename}...")
 

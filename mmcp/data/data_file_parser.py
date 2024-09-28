@@ -1,9 +1,9 @@
 from codecs import open as codecs_open
 from json import load
 
-from PyQt5.QtWidgets import QMessageBox
 from numpy import array, set_printoptions
 
+from mmcp.core import FileSavingError, DataParsingError, DataValidationError
 from mmcp.data import ModelData
 
 type_error = lambda key, expected_type: f"❌ Incorrect data type for '{key}'! Expected {expected_type}."
@@ -20,14 +20,23 @@ def parse_data_json_file(filename):
 
     Raises:
         SystemExit: If data validation fails, displaying a QMessageBox critical error.
+        DataParsingError: If there are issues parsing the JSON file.
+        DataValidationError: If the parsed data fails validation checks.
+        TypeError: If the data types are incorrect.
     """
-    with codecs_open(filename, 'r', encoding='utf-8') as f:
-        data = load(f)
+
+    try:
+        with codecs_open(filename, 'r', encoding='utf-8') as f:
+            data = load(f)
+    except OSError as e:
+        raise FileSavingError(f"Error opening JSON file: {e}") from e
+    except ValueError as e:
+        raise DataParsingError(f"Error parsing JSON file: {e}") from e
 
     try:
         for key in ["c", "A", "b", "d", "model_types", "processing_times", "precedence_graph", "weights"]:
             if key not in data:
-                raise ValueError(f"Missing key '{key}' in the JSON data.")
+                raise DataValidationError(f"Missing key '{key}' in the JSON data.")
 
         # --- Dimension and Type Checks ---
         num_elements = len(data["c"])
@@ -124,8 +133,8 @@ def parse_data_json_file(filename):
 
         return model_data
 
-    except (ValueError, TypeError, KeyError) as e:
-        QMessageBox.critical(None, "Please review the file carefully.", f"Error parsing data file: {e}")
+    except (ValueError, TypeError) as e:
+        raise DataValidationError(f"Error validating data: {e}") from e
 
 
 if __name__ == "__main__":

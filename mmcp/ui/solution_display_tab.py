@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout
 
+from mmcp.core import FileSavingError
 from mmcp.data import generate_data_json_file, SolutionData
 
 
@@ -103,7 +104,7 @@ class SolutionDisplayTab(QWidget):
         if filename:
             try:
                 generate_data_json_file(filename, data=self.solution)
-            except Exception as e:
+            except FileSavingError as e:
                 QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
             else:
                 QMessageBox.information(self, "Success", "File saved successfully.")

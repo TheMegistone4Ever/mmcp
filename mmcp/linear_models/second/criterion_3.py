@@ -1,5 +1,7 @@
 from ortools.linear_solver import pywraplp
 
+from mmcp.core import SolverError
+
 
 def solve(c, A, b, d, weights):
     """
@@ -35,13 +37,18 @@ def solve(c, A, b, d, weights):
     z_prev = 0
 
     objective = solver.Objective()
-    for _ in range(max_iterations):
+    for iteration in range(max_iterations):
         objective = solver.Objective()
         for i in range(num_vars):
             objective.SetCoefficient(x[i], weights[i] * (c[i] + d[i]))  # Include private resources
         objective.SetMaximization()
 
-        solver.Solve()
+        solver_status = solver.Solve()
+
+        if solver_status != pywraplp.Solver.OPTIMAL:
+            raise SolverError(f"Unable to find the optimal solution for the second linear model, third criterion. "
+                              f"{solver_status = }, {iteration = }")
+
         z_current = objective.Value()
 
         if abs(z_current - z_prev) < tolerance:

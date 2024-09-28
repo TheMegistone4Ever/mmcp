@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QIcon  # Import QIcon
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QMessageBox, QTabBar
 
 from mmcp.data import ModelData
@@ -14,6 +14,7 @@ class CustomTabBar(QTabBar):
         Override the tab size hint to set a custom width.
         Set a dynamic size based on the current widget size and number of tabs.
         """
+
         return QSize(self.parent().width() // self.count(), 50) if self.count() else QSize(0, 50)
 
 
@@ -76,8 +77,10 @@ class MainWindow(QMainWindow):
 
     def handle_data_loaded(self, data: ModelData):
         """Handle the data loaded signal from the LoadDataTab."""
+
         if len(data.c) < 2:
             QMessageBox.critical(self, "Error", "At least 2 elements are required.")
+            print("At least 2 elements are required.")
             return
 
         self.visualization_tab.set_data(data)

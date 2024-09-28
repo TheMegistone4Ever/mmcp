@@ -1,5 +1,7 @@
 from ortools.linear_solver import pywraplp
 
+from mmcp.core import SolverError, ConfigurationError
+
 
 def solve(c_list, A_list, b_list, d_list, model_types, beta):
     """
@@ -48,8 +50,14 @@ def solve(c_list, A_list, b_list, d_list, model_types, beta):
                 objective.SetCoefficient(x_list[i][j], beta * c_list[i][j] + (1 - beta) * d_list[i][j])
     objective.SetMaximization()  # or SetMinimization() depending on the problem
 
-    solver.Solve()
+    solver_status = solver.Solve()
+    if solver_status != pywraplp.Solver.OPTIMAL:
+        raise SolverError(f"Unable to find the optimal solution for the third linear model, connected model. "
+                          f"{solver_status = }")
 
-    optimal_solutions = [[x.solution_value() for x in element_x] for element_x in x_list]
+    try:
+        optimal_solutions = [[x.solution_value() for x in element_x] for element_x in x_list]
+    except Exception as e:
+        raise ConfigurationError(f"Error extracting solution from solver (connected model): {e}") from e
 
     return optimal_solutions

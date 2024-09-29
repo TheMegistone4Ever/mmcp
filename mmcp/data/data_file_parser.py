@@ -54,40 +54,40 @@ def parse_data_json_file(filename):
 
         # Dimension checks
         if not all(len(item) == num_vars for item in data["c"]):
-            raise ValueError("Inconsistent dimensions in 'c'. All elements should have the same number of variables.")
+            raise ValueError("Inconsistent dimensions in \"c\". All elements should have the same number of variables.")
 
         if not all(len(item) == num_vars for item in data["A"]):
             raise ValueError(
-                "Inconsistent dimensions in 'A'. The number of sub-lists should match the number of variables.")
+                "Inconsistent dimensions in \"A\". The number of sub-lists should match the number of variables.")
 
         if not all(len(subitem) == num_vars for item in data["A"] for subitem in item):
             raise ValueError(
-                "Inconsistent dimensions in 'A'. Sub-lists should have dimensions matching the number of variables.")
+                "Inconsistent dimensions in \"A\". Sub-lists should have dimensions matching the number of variables.")
 
         if not len(data["b"]) == num_elements or not all(len(item) == num_vars for item in data["b"]):
-            raise ValueError("Inconsistent dimensions in 'b'. Should match the number of elements and variables.")
+            raise ValueError("Inconsistent dimensions in \"b\". Should match the number of elements and variables.")
 
         if not len(data["d"]) == num_elements:
-            raise ValueError("Inconsistent dimensions in 'd'. Should match the number of elements.")
+            raise ValueError("Inconsistent dimensions in \"d\". Should match the number of elements.")
 
         if not len(data["model_types"]) == num_elements:
-            raise ValueError("Inconsistent dimensions in 'model_types'. Should match the number of elements.")
+            raise ValueError("Inconsistent dimensions in \"model_types\". Should match the number of elements.")
 
         if not len(data["processing_times"]) == num_vars:
-            raise ValueError("Inconsistent dimensions in 'processing_times'. Should match the number of variables.")
+            raise ValueError("Inconsistent dimensions in \"processing_times\". Should match the number of variables.")
 
         if not len(data["weights"]) == num_vars:
-            raise ValueError("Inconsistent dimensions in 'weights'. Should match the number of variables.")
+            raise ValueError("Inconsistent dimensions in \"weights\". Should match the number of variables.")
 
         # Positivity checks
         if not all(item >= 0 for sub_sub_list in data["A"] for sub_list in sub_sub_list for item in sub_list):
-            raise ValueError("Matrix 'A' should have all non-negative elements.")
+            raise ValueError("Matrix \"A\" should have all non-negative elements.")
 
         if not all(item >= 0 for sublist in data["b"] for item in sublist):
-            raise ValueError("Vector 'b' should have all non-negative elements.")
+            raise ValueError("Vector \"b\" should have all non-negative elements.")
 
         if not all(all(item >= 0 for item in sublist) if sublist is not None else True for sublist in data["d"]):
-            raise ValueError("Vector 'd' should have all non-negative elements.")
+            raise ValueError("Vector \"d\" should have all non-negative elements.")
 
         # Data type checks
         if not isinstance(data["c"], list) or not all(isinstance(item, list) for item in data["c"]) or not all(
@@ -124,7 +124,7 @@ def parse_data_json_file(filename):
 
         for key, value in data["precedence_graph"].items():
             if not isinstance(value, list) or not all(isinstance(item, int) for item in value):
-                raise TypeError(type_error(f"precedence_graph['{key}']", "list of integers"))
+                raise TypeError(type_error(f"precedence_graph[\"{key}\"]", "list of integers"))
 
         if not isinstance(data["weights"], list) or not all(
                 isinstance(item, (int, float)) for sub_list in data["weights"] for item in sub_list):

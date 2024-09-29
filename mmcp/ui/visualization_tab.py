@@ -166,7 +166,7 @@ class VisualizationTab(QWidget):
         Displays the solution in the SolutionDisplayTab.
         """
         logging.debug("Solve button clicked.")
-        solutions = SolutionData(values=list())
+        solutions = SolutionData(names=list(), values=list())
 
         try:
             for i, checkbox in enumerate(self.elements_checkboxes):
@@ -177,6 +177,7 @@ class VisualizationTab(QWidget):
                     solution = self._solve_for_element(i)
                     if solution:
                         logging.info(f"Solution found for element {i + 1}: {solution}")
+                        solutions.names.append(f"Element №{i + 1}")
                         solutions.values.append(solution)
                     else:
                         logging.warning(f"No solution found for Element {i + 1}.")

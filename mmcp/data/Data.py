@@ -61,7 +61,8 @@ class ModelData(NamedTuple):
 
 class SolutionData(NamedTuple):
     logging.debug(f"Initialized {__name__}")
+    names: List[str] = list()
     values: List[Any] = list()
 
     def __repr__(self) -> str:
-        return f"Solution Data:\n{"\n".join([f"Element №{i + 1}:\n{value}\n" for i, value in enumerate(self.values)])}"
+        return f"Solution Data:\n{"\n".join([f"{name}:\n{value}\n" for name, value in zip(self.names, self.values)])}"

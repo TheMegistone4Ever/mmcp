@@ -25,7 +25,6 @@ def main():
     print(f"Approximate completion times for the combinatorial model: {approximate_completion_times}")
 
 
-# TODO: Add criteria to the data generation
 # TODO: Change data generation to this: (Element 1 data), (Element 2 data), ...
 
 if __name__ == "__main__":

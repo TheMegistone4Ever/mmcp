@@ -34,22 +34,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Binary Production System Optimization")
         self.setGeometry(100, 100, 800, 600)
 
-        self.tab_widget = QTabWidget(self)
-        self.setCentralWidget(self.tab_widget)
-        self.tab_widget.setTabsClosable(False)
-
-        self.tab_widget.setTabBar(CustomTabBar())
-
-        self.load_data_tab = LoadDataTab()
-        self.solution_display_tab = SolutionDisplayTab()
-        self.visualization_tab = VisualizationTab(self.tab_widget, self.solution_display_tab)
-
-        self.tab_widget.addTab(self.load_data_tab, "Load Data")
-        self.tab_widget.addTab(self.visualization_tab, "Visualization")
-        self.tab_widget.addTab(self.solution_display_tab, "Solution Display")
-
-        self.load_data_tab.data_loaded.connect(self.handle_data_loaded)
-
+        self.tab_widget = None
+        self.visualization_tab = None
         self.init_ui()
 
     def init_ui(self):
@@ -83,6 +69,25 @@ class MainWindow(QMainWindow):
                 background-color: #E0E0E0; /* Slightly darker gray on hover */
             }
         """)
+
+        tab_widget = QTabWidget(self)
+        self.setCentralWidget(tab_widget)
+        tab_widget.setTabsClosable(False)
+
+        tab_widget.setTabBar(CustomTabBar())
+
+        load_data_tab = LoadDataTab()
+        solution_display_tab = SolutionDisplayTab()
+        visualization_tab = VisualizationTab(tab_widget, solution_display_tab)
+
+        tab_widget.addTab(load_data_tab, "Load Data")
+        tab_widget.addTab(visualization_tab, "Visualization")
+        tab_widget.addTab(solution_display_tab, "Solution Display")
+
+        load_data_tab.data_loaded.connect(self.handle_data_loaded)
+
+        self.visualization_tab = visualization_tab
+        self.tab_widget = tab_widget
 
     def handle_data_loaded(self, data: ModelData):
         """Handle the data loaded signal from the LoadDataTab."""

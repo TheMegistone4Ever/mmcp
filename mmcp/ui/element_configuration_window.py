@@ -68,10 +68,12 @@ class ElementConfigurationWindow(QDialog):
 
         layout = QVBoxLayout(self)
 
+        # Model Selection
         model_layout = QHBoxLayout()
         model_label = QLabel("Model:", self)
         model_layout.addWidget(model_label)
 
+        self.model_radio_buttons = list()
         for model_type in ModelType:
             radio_button = QRadioButton(str(model_type), self)
             self.model_radio_buttons.append(radio_button)
@@ -81,16 +83,21 @@ class ElementConfigurationWindow(QDialog):
 
         layout.addLayout(model_layout)
 
-        self.criterion_combo = QComboBox(self)
+        # Criterion Selection
         criterion_layout = QHBoxLayout()
         criterion_label = QLabel("Criterion:", self)
         criterion_layout.addWidget(criterion_label)
+
+        self.criterion_combo = QComboBox(self)
         criterion_layout.addWidget(self.criterion_combo)
+        self.criterion_combo.currentIndexChanged.connect(lambda idx: self.set_criterion(idx + 1))  # type: ignore
+
         layout.addLayout(criterion_layout)
 
-        # Initial Model and Criterion Setup
         self.set_model_type(ModelType(self.element_data["model_types"]))
+        self.criterion_combo.setCurrentIndex(self.element_data["criteria"] - 1)
 
+        # Display other element data
         for key, value in self.element_data.items():
             label = QLabel(f"{key}:", self)
             edit = QLineEdit(str(value), self)
@@ -98,6 +105,7 @@ class ElementConfigurationWindow(QDialog):
             layout.addWidget(label)
             layout.addWidget(edit)
 
+        # Buttons
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
         button_box.accepted.connect(self.accept)  # type: ignore
         button_box.rejected.connect(self.reject)  # type: ignore
@@ -131,3 +139,18 @@ class ElementConfigurationWindow(QDialog):
             if radio_button.text() == str(model_type):
                 radio_button.setChecked(True)
                 break
+
+    def set_criterion(self, criterion: int):
+        """
+        Sets the criterion for the element.
+
+        Args:
+            criterion: The criterion to set.
+        """
+        criterion = Criterion(max(1, min(3, criterion)))
+        logging.debug(f"Setting criterion to {criterion} for element {self.element_idx + 1}")
+        try:
+            self.master_data.set_criteria(self.element_idx, criterion)
+        except AssertionError as e:
+            logging.exception(f"Error setting criterion ({criterion}): {e}")
+            raise ConfigurationError(f"Error setting criterion ({criterion}): {e}") from e

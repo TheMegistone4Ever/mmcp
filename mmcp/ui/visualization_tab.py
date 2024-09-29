@@ -20,21 +20,19 @@ class VisualizationTab(QWidget):
         """
         Initializes the VisualizationTab.
         """
+        self.master_checkbox = None
+        self.tree_widget = None
+        self.checkbox_layout = None
         logging.debug("Initializing VisualizationTab.")
 
         super().__init__()
 
-        self.scroll_area = None
         self.tab_widget = tab_widget
         self.solution_display_tab = solution_display_tab
 
-        self.checkbox_layout = None
-        self.solve_button = None
-        self.tree_widget = None
-        self.elements_checkboxes = list()
-        self.master_checkbox = None
-        self.dmc_label = None
         self.data = ModelData()
+        self.elements_checkboxes = list()
+        self.config_windows = dict()
 
         self.init_ui()
 
@@ -75,13 +73,13 @@ class VisualizationTab(QWidget):
             }
         """)
 
-        self.dmc_label = QLabel("DMC (Decision Making Center)", self)
-        self.dmc_label.setAlignment(Qt.AlignCenter)
-        self.dmc_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        dmc_label = QLabel("DMC (Decision Making Center)", self)
+        dmc_label.setAlignment(Qt.AlignCenter)
+        dmc_label.setStyleSheet("font-size: 16px; font-weight: bold;")
 
-        self.solve_button = QPushButton("Solve", self)
-        self.solve_button.setCursor(Qt.PointingHandCursor)
-        self.solve_button.clicked.connect(self.solve)  # type: ignore
+        solve_button = QPushButton("Solve", self)
+        solve_button.setCursor(Qt.PointingHandCursor)
+        solve_button.clicked.connect(self.solve)  # type: ignore
 
         self.tree_widget = QTreeWidget(self)
         self.tree_widget.setHeaderLabels(["Elements"])
@@ -92,21 +90,33 @@ class VisualizationTab(QWidget):
         main_layout = QGridLayout(self)
 
         # --- Top Row - Scroll Area for Checkboxes ---
-        self.scroll_area = QScrollArea(self)
-        self.scroll_area.setWidgetResizable(True)
-        scroll_widget = QWidget(self.scroll_area)
-        self.scroll_area.setWidget(scroll_widget)
-        self.checkbox_layout = QVBoxLayout(scroll_widget)
-        main_layout.addWidget(self.scroll_area, 0, 0)
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+        scroll_widget = QWidget(scroll_area)
+        scroll_area.setWidget(scroll_widget)
+        checkbox_layout = QVBoxLayout(scroll_widget)
+        main_layout.addWidget(scroll_area, 0, 0)
 
         # DMC Label and Button (Row 0, Column 1)
         top_right_layout = QVBoxLayout()
-        top_right_layout.addWidget(self.dmc_label)
-        top_right_layout.addWidget(self.solve_button)
+        top_right_layout.addWidget(dmc_label)
+        top_right_layout.addWidget(solve_button)
         main_layout.addLayout(top_right_layout, 0, 1)
 
         # --- Bottom Row (Elements List) - Span 2 columns ---
         main_layout.addWidget(self.tree_widget, 1, 0, 1, 2)
+
+        self.checkbox_layout = checkbox_layout
+        self.master_checkbox = self._create_master_checkbox()
+
+    def _create_master_checkbox(self):
+        """Creates and adds the master checkbox to the layout."""
+        logging.debug("Creating master checkbox.")
+        master_checkbox = QCheckBox("Select All", self)
+        master_checkbox.setChecked(True)
+        master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
+        self.checkbox_layout.addWidget(master_checkbox)
+        return master_checkbox
 
     # noinspection PyProtectedMember
     def populate_tree(self):
@@ -116,11 +126,8 @@ class VisualizationTab(QWidget):
         logging.debug("Populating tree widget with data.")
         self.tree_widget.clear()
         self.elements_checkboxes.clear()
-        self._remove_master_checkbox()
 
         if self.data.c is not None:
-            self._create_master_checkbox()
-
             for i in range(len(self.data.c)):
                 element_item = QTreeWidgetItem(self.tree_widget, [f"Element {i + 1}"])
                 self._add_element_data_to_tree(element_item, i)
@@ -132,24 +139,8 @@ class VisualizationTab(QWidget):
                 self.checkbox_layout.addWidget(checkbox)
 
                 configure_button = QPushButton("Configure", self.tree_widget)
-                configure_button.config_window = None
+                configure_button.clicked.connect(lambda _, idx=i: self.open_configuration_window(idx))  # type: ignore
                 self.tree_widget.setItemWidget(element_item, 1, configure_button)
-
-    def _remove_master_checkbox(self):
-        """Removes the master checkbox from the layout if it exists."""
-        logging.debug("Removing master checkbox.")
-        if self.master_checkbox is not None:
-            self.checkbox_layout.removeWidget(self.master_checkbox)
-            self.master_checkbox.deleteLater()
-            self.master_checkbox = None
-
-    def _create_master_checkbox(self):
-        """Creates and adds the master checkbox to the layout."""
-        logging.debug("Creating master checkbox.")
-        self.master_checkbox = QCheckBox("Select All", self)
-        self.master_checkbox.setChecked(True)
-        self.master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
-        self.checkbox_layout.addWidget(self.master_checkbox)
 
     # noinspection PyProtectedMember
     def _add_element_data_to_tree(self, element_item, element_idx):
@@ -221,11 +212,11 @@ class VisualizationTab(QWidget):
         Get the selected model type for the given element index.
         """
         logging.debug(f"Getting selected model type for element {element_idx + 1}.")
-        config_window = self._get_config_window(element_idx)
+        config_window = self.config_windows.get(element_idx)
         if config_window is None:
             return ModelType.LINEAR_MODEL_1
         for i, model_type in enumerate(ModelType):
-            if config_window.model_radio_buttons[i].isChecked():
+            if config_window and config_window.model_radio_buttons[i].isChecked():
                 return model_type
 
     def selected_criterion(self, element_idx):
@@ -233,21 +224,15 @@ class VisualizationTab(QWidget):
         Get the selected criterion for the given element index.
         """
         logging.debug(f"Getting selected criterion for element {element_idx + 1}.")
-        config_window = self._get_config_window(element_idx)
-        if config_window:
-            text_combo = config_window.criterion_combo.currentText()
+        config_window = self.config_windows.get(element_idx)
+        if config_window and config_window.criterion_combo:
+            criteria = config_window.criterion_combo.currentIndex() + 1
             try:
-                return Criterion(text_combo)
+                self.data.set_criteria(element_idx, criteria)
+                return Criterion(criteria)
             except ValueError:
-                pass  # Fallback to default
+                logging.warning(f"Invalid criterion selected: {criteria}")
         return Criterion.CRITERION_1
-
-    def _get_config_window(self, element_idx):
-        """Gets the configuration window for the given element index."""
-        logging.debug(f"Getting configuration window for element {element_idx + 1}.")
-        element_item = self.tree_widget.topLevelItem(element_idx)
-        configure_button = self.tree_widget.itemWidget(element_item, 1)
-        return configure_button.config_window
 
     def set_data(self, data):
         """
@@ -294,12 +279,10 @@ class VisualizationTab(QWidget):
         logging.debug(f"Opening configuration window for element {element_idx + 1}.")
         element_data = {k: list(v)[element_idx] for k, v in self.data._asdict().items() if len(v) > element_idx}
 
-        config_window = self._get_config_window(element_idx)
+        if element_idx not in self.config_windows:
+            self.config_windows[element_idx] = ElementConfigurationWindow(self.data, element_data, element_idx)
 
-        if not config_window:
-            config_window = ElementConfigurationWindow(self.data, element_data, element_idx)
-            configure_button = self.tree_widget.itemWidget(self.tree_widget.topLevelItem(element_idx), 1)
-            configure_button.config_window = config_window
+        config_window = self.config_windows.get(element_idx)
 
         if model_type:
             config_window.set_model_type(model_type)

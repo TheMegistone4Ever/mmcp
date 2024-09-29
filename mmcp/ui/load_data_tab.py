@@ -17,8 +17,6 @@ class LoadDataTab(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.load_button = None
-        self.label = None
         self.init_ui()
 
     def init_ui(self):
@@ -48,19 +46,17 @@ class LoadDataTab(QWidget):
 
         layout = QVBoxLayout(self)
 
-        self.label = QLabel("Load .json file:", self)
-        self.label.setAlignment(Qt.AlignCenter)
-        font = self.label.font()
+        label = QLabel("Load .json file:", self)
+        label.setAlignment(Qt.AlignCenter)
+        font = label.font()
         font.setPointSize(32)
-        self.label.setFont(font)
-        self.label.setAlignment(Qt.AlignBottom | Qt.AlignHCenter)
-        layout.addWidget(self.label)
+        label.setFont(font)
+        label.setAlignment(Qt.AlignBottom | Qt.AlignHCenter)
+        layout.addWidget(label)
 
-        self.load_button = QPushButton("Browse", self)
-        self.load_button.clicked.connect(self.browse_file)  # type: ignore
-        self.load_button.move(200, 200)
-
-        layout.addWidget(self.load_button)
+        load_button = QPushButton("Browse", self)
+        load_button.clicked.connect(self.browse_file)  # type: ignore
+        layout.addWidget(load_button)
 
     def browse_file(self):
         """

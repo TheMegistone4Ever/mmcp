@@ -16,8 +16,6 @@ class SolutionDisplayTab(QWidget):
         logging.debug("Initializing SolutionDisplayTab.")
         super().__init__()
 
-        self.save_button = None
-        self.copy_button = None
         self.text_edit = None
         self.filename = "solution.json"
         self.solution = None
@@ -55,13 +53,13 @@ class SolutionDisplayTab(QWidget):
 
         button_layout = QHBoxLayout()
 
-        self.copy_button = QPushButton("Copy to Clipboard", self)
-        self.copy_button.clicked.connect(self.copy_to_clipboard)  # type: ignore
-        button_layout.addWidget(self.copy_button)
+        copy_button = QPushButton("Copy to Clipboard", self)
+        copy_button.clicked.connect(self.copy_to_clipboard)  # type: ignore
+        button_layout.addWidget(copy_button)
 
-        self.save_button = QPushButton("Save to .json file", self)
-        self.save_button.clicked.connect(self.save_to_file)  # type: ignore
-        button_layout.addWidget(self.save_button)
+        save_button = QPushButton("Save to .json file", self)
+        save_button.clicked.connect(self.save_to_file)  # type: ignore
+        button_layout.addWidget(save_button)
 
         layout.addLayout(button_layout)
 
@@ -116,7 +114,6 @@ class SolutionDisplayTab(QWidget):
             try:
                 generate_data_json_file(filename, data=self.solution)
                 logging.info(f"Solution saved to: {filename}")
-                QMessageBox.information(self, "Success", "File saved successfully.")
             except FileSavingError as e:
                 logging.exception(f"Failed to save file: {e}")
                 QMessageBox.critical(self, "Error", f"Failed to save file: {e}")

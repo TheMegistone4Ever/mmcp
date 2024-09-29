@@ -3,14 +3,34 @@ import logging
 logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
-from numpy import set_printoptions, arange
+from numpy import set_printoptions, arange, array
 from numpy.random import seed, rand, randint, choice
 
 from mmcp.data import LinearModelData, CombinatorialModelData, ModelData
-from mmcp.utils import ModelType
+from mmcp.utils import ModelType, Criterion
 
 set_printoptions(precision=2, suppress=True)
 seed(1810)
+
+
+def _criteria(model_type: ModelType) -> list[int]:
+    """
+    Returns the criteria for the given model type.
+
+    Args:
+        model_type: The model type.
+
+    Returns:
+        A list of criteria.
+    """
+    if model_type == ModelType.LINEAR_MODEL_1:
+        return [int(Criterion.CRITERION_1), int(Criterion.CRITERION_2), int(Criterion.CRITERION_3)]
+    if model_type == ModelType.LINEAR_MODEL_2:
+        return [int(Criterion.CRITERION_1), int(Criterion.CRITERION_2), int(Criterion.CRITERION_3)]
+    if model_type == ModelType.LINEAR_MODEL_3:
+        return [int(Criterion.CRITERION_1)]
+    if model_type == ModelType.COMBINATORIAL_MODEL:
+        return [int(Criterion.CRITERION_1), int(Criterion.CRITERION_2)]
 
 
 def generate_linear_model_data(num_elements=5, num_vars=50) -> LinearModelData:
@@ -27,13 +47,16 @@ def generate_linear_model_data(num_elements=5, num_vars=50) -> LinearModelData:
     logging.debug(f"Entering generate_linear_model_data with num_elements={num_elements}, num_vars={num_vars}")
 
     d = [rand(num_vars) if rand() < .5 else None for _ in range(num_elements)]
-
+    model_types = [int(ModelType.LINEAR_MODEL_1) if d[i] is None
+                   else choice([int(model) for model in ModelType if model != ModelType.COMBINATORIAL_MODEL])
+                   for i in range(num_elements)]
     data = LinearModelData(
         c=rand(num_elements, num_vars),
         A=rand(num_elements, num_vars, num_vars),
         b=rand(num_elements, num_vars),
         d=d,
-        model_types=randint(int(ModelType.LINEAR_MODEL_1), int(ModelType.COMBINATORIAL_MODEL) + 1, num_elements),
+        criteria=array([choice(_criteria(ModelType(model_type))) for model_type in model_types]),
+        model_types=array(model_types),
     )
     logging.info(f"Generated linear model data: {data}")
     return data
@@ -79,8 +102,13 @@ def generate_model_data(num_elements=5, num_vars=50, num_jobs=50) -> ModelData:
     logging.debug(
         f"Entering generate_model_data with num_elements={num_elements}, num_vars={num_vars}, num_jobs={num_jobs}")
 
+    linear_data = generate_linear_model_data(num_elements, num_vars)
+    linear_data.set_model_type_for_all(
+        array([int(ModelType.LINEAR_MODEL_1) if linear_data.d[i] is None
+               else choice([int(model) for model in ModelType]) for i in range(num_elements)]))
+    linear_data.set_criteria_for_all(array([choice(_criteria(ModelType(model))) for model in linear_data.model_types]))
     data = ModelData(
-        *generate_linear_model_data(num_elements, num_vars),
+        *linear_data,
         *generate_combinatorial_model_data(num_vars, num_jobs),
     )
     logging.info(f"Generated model data: {data}")

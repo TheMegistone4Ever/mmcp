@@ -73,6 +73,9 @@ def parse_data_json_file(filename):
         if not len(data["model_types"]) == num_elements:
             raise ValueError("Inconsistent dimensions in \"model_types\". Should match the number of elements.")
 
+        if not len(data["criteria"]) == num_elements:
+            raise ValueError("Inconsistent dimensions in \"criteria\". Should match the number of elements.")
+
         if not len(data["processing_times"]) == num_vars:
             raise ValueError("Inconsistent dimensions in \"processing_times\". Should match the number of variables.")
 
@@ -85,6 +88,12 @@ def parse_data_json_file(filename):
 
         if not all(item >= 0 for sublist in data["b"] for item in sublist):
             raise ValueError("Vector \"b\" should have all non-negative elements.")
+
+        if not all(item >= 0 for item in data["model_types"]):
+            raise ValueError("Vector \"model_types\" should have all non-negative elements.")
+
+        if not all(item >= 0 for item in data["criteria"]):
+            raise ValueError("Vector \"criteria\" should have all non-negative elements.")
 
         if not all(all(item >= 0 for item in sublist) if sublist is not None else True for sublist in data["d"]):
             raise ValueError("Vector \"d\" should have all non-negative elements.")
@@ -115,6 +124,9 @@ def parse_data_json_file(filename):
         if not isinstance(data["model_types"], list) or not all(isinstance(item, int) for item in data["model_types"]):
             raise TypeError(type_error("model_types", "list of integers"))
 
+        if not isinstance(data["criteria"], list) or not all(isinstance(item, int) for item in data["criteria"]):
+            raise TypeError(type_error("criteria", "list of integers"))
+
         if not isinstance(data["processing_times"], list) or not all(
                 isinstance(item, (int, float)) for item in data["processing_times"]):
             raise TypeError(type_error("processing_times", "NumPy array of numbers"))
@@ -130,11 +142,23 @@ def parse_data_json_file(filename):
                 isinstance(item, (int, float)) for sub_list in data["weights"] for item in sub_list):
             raise TypeError(type_error("weights", "NumPy array of numbers"))
 
+        # For each model_type the criteria should be as follows:
+        for model_type, criteria in zip(data["model_types"], data["criteria"]):
+            if model_type == 1 and criteria not in [1, 2, 3]:
+                raise ValueError("For model type 0, the criteria should be 1, 2, or 3.")
+            if model_type == 2 and criteria not in [1, 2, 3]:
+                raise ValueError("For model type 1, the criteria should be 1, 2, or 3.")
+            if model_type == 3 and criteria not in [1]:
+                raise ValueError("For model type 2, the criteria should be 1.")
+            if model_type == 4 and criteria not in [1, 2]:
+                raise ValueError("For model type 3, the criteria should be 1 or 2.")
+
         model_data = ModelData(
             c=array(data["c"]),
             A=array(data["A"]),
             b=array(data["b"]),
             d=[array(item) if item is not None else None for item in data["d"]],
+            criteria=array(data["criteria"]),
             model_types=array(data["model_types"]),
             processing_times=array(data["processing_times"]),
             precedence_graph={key: array(value) for key, value in data["precedence_graph"].items()},

@@ -52,11 +52,10 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, 
             logging.exception(f"Error saving data to JSON file: {e}")
             raise FileSavingError(f"Error saving data to JSON file: {e}") from e
 
-    print(f"Generated data file (JSON): {filename}...")
-
 
 if __name__ == "__main__":
     file_path = "../ui/example.json"
     generate_data_json_file(file_path)
+    print(f"Generated data file (JSON): {file_path}...")
     with open(file_path, "r") as generated:
         print(with_precision(load(generated)))

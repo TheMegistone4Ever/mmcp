@@ -314,16 +314,24 @@ class VisualizationTab(QWidget):
         self._add_element_data_to_tree(element_item, element_idx)
 
     def on_master_checkbox_changed(self, state):
-        """
-        Handles the primary checkbox state change.
-        """
+        """Handles the master checkbox state change."""
         logging.debug(f"Master checkbox changed to: {"Checked" if state == Qt.Checked else "Unchecked"}")
         for checkbox in self.elements_checkboxes:
+            checkbox.blockSignals(True)
             checkbox.setChecked(state == Qt.Checked)
+            checkbox.blockSignals(False)
 
-    def on_element_checkbox_changed(self):
+    def on_element_checkbox_changed(self, state):
         """Handles the element checkbox state change."""
-        logging.debug("Element checkbox changed.")
+        logging.debug(f"Element checkbox changed to: {"Checked" if state == Qt.Checked else "Unchecked"}")
         num_checked = sum(checkbox.isChecked() for checkbox in self.elements_checkboxes)
-        self.master_checkbox.setCheckState(Qt.Checked if num_checked == len(self.elements_checkboxes)
-                                           else Qt.Unchecked if num_checked == 0 else Qt.PartiallyChecked)
+        total_checkboxes = len(self.elements_checkboxes)
+
+        self.master_checkbox.blockSignals(True)
+        if num_checked == total_checkboxes:
+            self.master_checkbox.setCheckState(Qt.Checked)
+        elif num_checked == 0:
+            self.master_checkbox.setCheckState(Qt.Unchecked)
+        else:
+            self.master_checkbox.setCheckState(Qt.PartiallyChecked)
+        self.master_checkbox.blockSignals(False)

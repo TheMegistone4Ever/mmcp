@@ -1,7 +1,7 @@
 import logging
 import sys
 
-logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
 from PyQt5.QtCore import pyqtSignal, Qt

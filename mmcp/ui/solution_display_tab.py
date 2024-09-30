@@ -1,6 +1,6 @@
 import logging
 
-logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
 from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout

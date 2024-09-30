@@ -2,7 +2,7 @@ import logging
 
 from mmcp.utils import Vars
 
-logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
 from ortools.linear_solver import pywraplp

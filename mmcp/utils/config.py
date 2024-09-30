@@ -18,7 +18,7 @@ class Vars:
     tolerance = .001
 
 
-logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
 logging.debug(f"Initialized {__name__}")

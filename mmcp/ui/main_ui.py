@@ -1,9 +1,13 @@
 import logging
-import sys
+from os import makedirs
+from os.path import join
 
-logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
+logs_dir = r".\logs"
+makedirs(logs_dir, exist_ok=True)
+logging.basicConfig(filename=join(logs_dir, "mmcp.log"), level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
+import sys
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QMessageBox, QTabBar
@@ -20,7 +24,6 @@ class CustomTabBar(QTabBar):
         Override the tab size hint to set a custom width.
         Set a dynamic size based on the current widget size and number of tabs.
         """
-
         return QSize(self.parent().width() // self.count(), 50) if self.count() else QSize(0, 50)
 
 
@@ -103,7 +106,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.setCurrentIndex(1)  # Switch to Visualization tab
 
 
-# pyinstaller --onefile --windowed --icon=..\..\media\images\icon.ico main.py
+# pyinstaller --onefile --windowed --icon="media\images\icon.ico" "mmcp\ui\main_ui.py"
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     icon_path = r"..\..\media\images\icon.ico"

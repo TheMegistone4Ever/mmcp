@@ -3,9 +3,12 @@ import logging
 logging.basicConfig(filename=r"..\..\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
+from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
+
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu,
-                             QMessageBox, QCheckBox, QVBoxLayout, QScrollArea, QGridLayout)
+from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu, QMessageBox,
+                             QCheckBox, QVBoxLayout, QScrollArea, QGridLayout, QHBoxLayout, QComboBox)
 
 from mmcp.core import Solver, ConfigurationError, ModelTypeError, CriterionError
 from mmcp.data import ModelData, SolutionData
@@ -23,6 +26,7 @@ class VisualizationTab(QWidget):
         self.master_checkbox = None
         self.tree_widget = None
         self.checkbox_layout = None
+        self.threads_combo = None
         logging.debug("Initializing VisualizationTab.")
 
         super().__init__()
@@ -101,7 +105,18 @@ class VisualizationTab(QWidget):
         top_right_layout = QVBoxLayout()
         top_right_layout.addWidget(dmc_label)
         top_right_layout.addWidget(solve_button)
+        dmc_label.setStyleSheet("padding-bottom: 50px;")
         main_layout.addLayout(top_right_layout, 0, 1)
+
+        # --- Threads Selection ---
+        threads_layout = QHBoxLayout()
+        threads_label = QLabel("Threads:", self)
+        threads_layout.addWidget(threads_label)
+        self.threads_combo = QComboBox(self)
+        self.threads_combo.addItems(["1", "2", "4", "8", "16", "32"])  # Add thread options
+        self.threads_combo.setCurrentIndex(0)  # Default to 1 thread
+        threads_layout.addWidget(self.threads_combo)
+        main_layout.addLayout(threads_layout, 0, 1)
 
         # --- Bottom Row (Elements List) - Span 2 columns ---
         main_layout.addWidget(self.tree_widget, 1, 0, 1, 2)
@@ -153,36 +168,42 @@ class VisualizationTab(QWidget):
 
     def solve(self):
         """
-        Solves the optimization problem for each selected element.
-        Displays the solution in the SolutionDisplayTab.
+        Solves the optimization problem using the selected number of threads and maintains element order.
         """
         logging.debug("Solve button clicked.")
         solutions = SolutionData(names=list(), values=list())
 
-        try:
+        num_threads = int(self.threads_combo.currentText())  # Get selected thread count
+        logging.debug(f"Using {num_threads} threads for solving.")
+
+        with ThreadPoolExecutor(max_workers=num_threads) as pool:
+            futures = OrderedDict()
             for i, checkbox in enumerate(self.elements_checkboxes):
                 if not checkbox.isChecked():
                     continue
-                logging.debug(f"Solving for element {i + 1}.")
+                logging.debug(f"Submitting solve task for element {i + 1} to thread pool.")
+                futures[i] = pool.submit(self._solve_for_element, i)
+
+            for element_idx, future in futures.items():
                 try:
-                    solution = self._solve_for_element(i)
+                    solution = future.result()
                     if solution:
-                        logging.info(f"Solution found for element {i + 1}: {solution}")
-                        solutions.names.append(f"Element №{i + 1}")
+                        logging.info(f"Solution found for element {element_idx + 1}: {solution}")
+                        solutions.names.append(f"Element №{element_idx + 1}")
                         solutions.values.append(solution)
                     else:
-                        logging.warning(f"No solution found for Element {i + 1}.")
-                        QMessageBox.warning(self, "Warning", f"No solution found for Element {i + 1}.")
+                        logging.warning(f"No solution found for Element {element_idx + 1}.")
+                        QMessageBox.warning(self, "Warning", f"No solution found for Element {element_idx + 1}.")
                 except (ConfigurationError, ModelTypeError, CriterionError) as e:
-                    logging.exception(f"Failed to solve for Element {i + 1}. Error: {e}")
-                    QMessageBox.critical(self, "Error", f"Failed to solve for Element {i + 1}. Error: {e}")
-        except Exception as e:
-            logging.exception(f"An unexpected error occurred: {e}")
-            QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
-        finally:
-            logging.debug("Displaying solutions in SolutionDisplayTab.")
-            self.solution_display_tab.display_solution(solutions)
-            self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
+                    logging.exception(f"Failed to solve for Element {element_idx + 1}. Error: {e}")
+                    QMessageBox.critical(self, "Error", f"Failed to solve for Element {element_idx + 1}. Error: {e}")
+                except Exception as e:
+                    logging.exception(f"An unexpected error occurred: {e}")
+                    QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
+
+        logging.debug("Displaying solutions in SolutionDisplayTab.")
+        self.solution_display_tab.display_solution(solutions)
+        self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
 
     def _solve_for_element(self, element_idx):
         """Solves the optimization problem for a single element."""

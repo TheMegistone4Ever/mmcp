@@ -14,7 +14,7 @@ from mmcp.utils import with_precision
 
 
 # noinspection PyProtectedMember
-def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, data=None):
+def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, threads=1, data=None):
     """
     Generates a data file (JSON wrapper) with synthetic data.
 
@@ -23,13 +23,14 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, 
         num_elements (int): The number of elements.
         num_vars (int): The number of variables in each element.
         num_jobs (int): The number of jobs.
+        threads (int): The number of threads to use for data generation.
         data (dict): The data to write to the file. If None, synthetic data will be generated.
     """
     logging.debug(f"Entering generate_data_json_file with filename={filename}, num_elements={num_elements}, "
                   f"num_vars={num_vars}, num_jobs={num_jobs}, data={data}")
 
     if data is None:
-        data = generate_model_data(num_elements, num_vars, num_jobs)
+        data = generate_model_data(num_elements, num_vars, num_jobs, threads)
 
     dict_data = data._asdict()
 
@@ -55,7 +56,7 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, 
 
 if __name__ == "__main__":
     file_path = "../ui/example.json"
-    generate_data_json_file(file_path)
+    generate_data_json_file(file_path, threads=4)
     print(f"Generated data file (JSON): {file_path}...")
     with open(file_path, "r") as generated:
         print(with_precision(load(generated)))

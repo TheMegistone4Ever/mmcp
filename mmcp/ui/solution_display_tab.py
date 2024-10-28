@@ -3,7 +3,7 @@ import logging
 logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
-from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QTextEdit, QPushButton, QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout, QLabel
 
 from mmcp.core import FileSavingError
 from mmcp.data import generate_data_json_file, SolutionData
@@ -17,8 +17,9 @@ class SolutionDisplayTab(QWidget):
         super().__init__()
 
         self.text_edit = None
-        self.filename = "solution.json"
         self.solution = None
+        self.solution_time_label = None
+        self.filename = "solution.json"
 
         self.init_ui()
 
@@ -43,6 +44,10 @@ class SolutionDisplayTab(QWidget):
             QPushButton:hover {
                 background-color: #005A9E; /* Darker blue on hover */
             }
+            QLabel {
+                color: #333333; /* Point Charcoal */
+                font-size: 10pt;
+            }
         """)
 
         layout = QVBoxLayout(self)
@@ -50,6 +55,9 @@ class SolutionDisplayTab(QWidget):
         self.text_edit = QTextEdit(self)
         self.text_edit.setReadOnly(True)
         layout.addWidget(self.text_edit)
+
+        self.solution_time_label = QLabel(self)
+        layout.addWidget(self.solution_time_label)
 
         button_layout = QHBoxLayout()
 
@@ -63,18 +71,20 @@ class SolutionDisplayTab(QWidget):
 
         layout.addLayout(button_layout)
 
-    def display_solution(self, solution_data: SolutionData):
+    def display_solution(self, solution_data: SolutionData, solution_time: float):
         """
         Formats and displays the solution data in the QTextEdit.
 
         Args:
             solution_data: The solution data to display.
+            solution_time: The time it took to find the solution (in seconds).
         """
         logging.debug("Displaying solution in SolutionDisplayTab.")
 
         self.solution = solution_data
         self.text_edit.setPlainText(str(self.solution) if len(self.solution.values)
                                     else "No optimal solution found.\nPlease check your input data.")
+        self.solution_time_label.setText(f"Solution found in {solution_time:.6f} seconds...")
 
     def copy_to_clipboard(self):
         """

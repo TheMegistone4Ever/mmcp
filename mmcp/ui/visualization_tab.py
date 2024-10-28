@@ -3,6 +3,7 @@ import logging
 logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
+from time import time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 
@@ -176,6 +177,7 @@ class VisualizationTab(QWidget):
         num_threads = int(self.threads_combo.currentText())  # Get selected thread count
         logging.debug(f"Using {num_threads} threads for solving.")
 
+        start_time = time()
         with ThreadPoolExecutor(max_workers=num_threads) as pool:
             futures = OrderedDict()
             for i, checkbox in enumerate(self.elements_checkboxes):
@@ -200,9 +202,9 @@ class VisualizationTab(QWidget):
                 except Exception as e:
                     logging.exception(f"An unexpected error occurred: {e}")
                     QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
-
-        logging.debug("Displaying solutions in SolutionDisplayTab.")
-        self.solution_display_tab.display_solution(solutions)
+        end_time = time()
+        logging.debug(f"Displaying solutions in SolutionDisplayTab. Time taken: {end_time - start_time:.4f} seconds.")
+        self.solution_display_tab.display_solution(solutions, end_time - start_time)
         self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
 
     def _solve_for_element(self, element_idx):

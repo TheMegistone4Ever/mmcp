@@ -32,6 +32,9 @@ class Solver:
         LOGGER.debug(f"Solving model with criterion: {self.criterion_type}")
         return self.model.solve(self.criterion_type, self.data)
 
+    def __str__(self):
+        return f"\"{self.model}\" with criterion: \"{self.criterion_type}\""
+
 
 class LinearModel1(Model):
     LOGGER.debug(f"Initialized {__name__}")
@@ -47,6 +50,9 @@ class LinearModel1(Model):
         else:
             LOGGER.error(f"Unsupported criterion for Linear Model 1: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Linear Model 1: {str(criterion)}")
+
+    def __str__(self):
+        return "Linear Model 1"
 
 
 class LinearModel2(Model):
@@ -64,6 +70,9 @@ class LinearModel2(Model):
             LOGGER.error(f"Unsupported criterion for Linear Model 2: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Linear Model 2: {str(criterion)}")
 
+    def __str__(self):
+        return "Linear Model 2"
+
 
 class LinearModel3(Model):
     LOGGER.debug(f"Initialized {__name__}")
@@ -75,6 +84,9 @@ class LinearModel3(Model):
         else:
             LOGGER.error(f"Unsupported criterion for Linear Model 3: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Linear Model 3: {str(criterion)}")
+
+    def __str__(self):
+        return "Linear Model 3 (Connected Model)"
 
 
 class CombinatorialModel(Model):
@@ -90,3 +102,6 @@ class CombinatorialModel(Model):
         else:
             LOGGER.error(f"Unsupported criterion for Combinatorial Model: {str(criterion)}")
             raise CriterionError(f"Unsupported criterion for Combinatorial Model: {str(criterion)}")
+
+    def __str__(self):
+        return "Combinatorial Model"

@@ -41,6 +41,7 @@ def measure_execution_time(solver: Solver, warmup: int = 10, iterations: int = 1
         A list of execution times in seconds. NaN is appended for SolverErrors.
     """
     LOGGER.debug(f"Measuring execution time for {solver}, {warmup} warmup iterations, {iterations} iterations.")
+    print(f"Measuring execution time for {solver}, {warmup} warmup iterations, {iterations} iterations.")
 
     times = list()
     for _ in range(warmup + iterations):

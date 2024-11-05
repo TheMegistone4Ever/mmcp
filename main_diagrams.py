@@ -62,7 +62,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                 plt.legend(handles=[Line2D([0], [0], color='magenta', lw=2, label='Mean'),
                                     Line2D([0], [0], color='gray', lw=2, linestyle='dashed', label='Outliers')])
                 plt.tight_layout()
-                filename = f"{root}\\{model_type.name}_{criterion.name}.png"
+                filename = f"{root}\\{model_type.name}_{criterion.name}_{num_vars_range[0]}-{num_vars_range[-1]}.png"
                 plt.savefig(filename)
                 plt.show()
                 LOGGER.info(f"Performance diagram for {model_type} and {criterion} saved to {filename}...")

@@ -7,15 +7,15 @@ from mmcp.data import generate_model_data
 from mmcp.utils import ModelType, Criterion, is_valid_combination, ith_data, measure_execution_time, LOGGER
 
 
-def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
+def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: str = r".\docs\diagrams\performance"):
     """Generates and saves performance diagrams for different model types and criteria.
 
     Args:
         iterations: Number of iterations for time measurement.
         threads: Number of threads to use for data generation (not used in current implementation).
-
+        root: Root directory to save the diagrams.
     """
-    num_vars_range = np.linspace(1, 500, 100, dtype=int)
+    num_vars_range = np.linspace(1, 100, 50, dtype=int)
 
     for model_type in ModelType:
         for criterion in Criterion:
@@ -62,11 +62,10 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
                 plt.legend(handles=[Line2D([0], [0], color='magenta', lw=2, label='Mean'),
                                     Line2D([0], [0], color='gray', lw=2, linestyle='dashed', label='Outliers')])
                 plt.tight_layout()
-                plt.savefig(f"performance_{model_type.name}_{criterion.name}.png")
+                filename = f"{root}\\{model_type.name}_{criterion.name}.png"
+                plt.savefig(filename)
                 plt.show()
-
-                LOGGER.info(f"Performance diagram for {model_type} and {criterion} saved to "
-                            f"performance_{model_type.name}_{criterion.name}.png")
+                LOGGER.info(f"Performance diagram for {model_type} and {criterion} saved to {filename}...")
 
 
 if __name__ == "__main__":

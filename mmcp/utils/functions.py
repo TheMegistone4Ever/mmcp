@@ -50,6 +50,8 @@ def measure_execution_time(solver: Solver, warmup: int = 10, iterations: int = 1
             solver.solve()
             end_time = time()
             times.append(end_time - start_time)
+            LOGGER.debug(f"Execution time: {times[-1]:,.6f}")
+            print(f"Execution time: {times[-1]:,.6f}")
         except SolverError as e:
             LOGGER.error(f"Solver error: {e}")
             times.append(nan)

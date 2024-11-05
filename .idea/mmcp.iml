@@ -4,12 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/docs" />
-      <excludeFolder url="file://$MODULE_DIR$/mmcp/ui/docs" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
-      <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/mmcp/ui/logs" />
-      <excludeFolder url="file://$MODULE_DIR$/mmcp/data/logs" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.12 (mmcp)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

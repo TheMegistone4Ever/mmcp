@@ -24,12 +24,12 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                 continue
 
             fig, ax = plt.subplots(1, 1, figsize=(16, 10), dpi=150)
-            fig.suptitle(f"Performance: {model_type.name} - {criterion.name}")
+            fig.suptitle(f"Performance: {str(model_type)} - {str(criterion)}")
 
             times = list()
             if model_type.name.lower().startswith("linear"):
                 for num_vars in num_vars_range:
-                    LOGGER.info(f"Solving for {model_type} and {criterion} with {num_vars} variables")
+                    LOGGER.info(f"Solving for {str(model_type)} and {str(criterion)} with {num_vars} variables")
 
                     data = generate_model_data(num_elements=1, num_vars=num_vars, threads=threads)
                     while data.d[0] is None:  # Retry if data generation fails
@@ -62,7 +62,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                 plt.legend(handles=[Line2D([0], [0], color='magenta', lw=2, label='Mean'),
                                     Line2D([0], [0], color='gray', lw=2, linestyle='dashed', label='Outliers')])
                 plt.tight_layout()
-                filename = f"{root}\\{model_type.name}_{criterion.name}_{num_vars_range[0]}-{num_vars_range[-1]}.png"
+                filename = f"{root}\\{model_type.name}_{criterion.name}_[{num_vars_range[0]};{num_vars_range[-1]}].png"
                 plt.savefig(filename)
                 plt.show()
                 LOGGER.info(f"Performance diagram for {model_type} and {criterion} saved to {filename}...")

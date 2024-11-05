@@ -1,11 +1,7 @@
 import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
-from time import time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
+from time import time
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPushButton, QDialog, QMenu, QMessageBox,
@@ -14,7 +10,10 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPus
 from mmcp.core import Solver, ConfigurationError, ModelTypeError, CriterionError
 from mmcp.data import ModelData, SolutionData
 from mmcp.ui import ElementConfigurationWindow
-from mmcp.utils import ModelType, Criterion
+from mmcp.utils import ModelType, Criterion, ith_data
+
+logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class VisualizationTab(QWidget):
@@ -134,7 +133,6 @@ class VisualizationTab(QWidget):
         self.checkbox_layout.addWidget(master_checkbox)
         return master_checkbox
 
-    # noinspection PyProtectedMember
     def populate_tree(self):
         """
         Populates the tree widget with the data and manages checkboxes.
@@ -211,25 +209,9 @@ class VisualizationTab(QWidget):
         """Solves the optimization problem for a single element."""
         logging.debug(f"Solving for element {element_idx + 1} with model type: "
                       f"{self.selected_model_type(element_idx)} and criterion: {self.selected_criterion(element_idx)}")
-        return Solver(self.ith_data(element_idx),
+        return Solver(ith_data(self.data, element_idx),
                       self.selected_model_type(element_idx),
                       self.selected_criterion(element_idx)).solve()
-
-    # TODO: Move to Utils
-    # noinspection PyProtectedMember
-    def ith_data(self, element_idx: int):
-        """
-        Get the data for the given element index.
-
-        Args:
-            element_idx: The index of the element.
-
-        Returns:
-            The data for the element.
-        """
-        logging.debug(f"Retrieving data for element {element_idx + 1}.")
-
-        return ModelData(**{k: list(v)[element_idx] for k, v in self.data._asdict().items() if len(v) > element_idx})
 
     def selected_model_type(self, element_idx):
         """

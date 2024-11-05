@@ -1,7 +1,14 @@
 import logging
-
 from os import makedirs
 from os.path import join
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.lines import Line2D
+
+from mmcp.core import Solver
+from mmcp.data import generate_model_data
+from mmcp.utils import ModelType, Criterion, is_valid_combination, ith_data, measure_execution_time
 
 # Configure logging
 LOGS_DIR = "./logs"
@@ -10,68 +17,6 @@ logging.basicConfig(filename=join(LOGS_DIR, "mmcp.log"), level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 LOGGER = logging.getLogger(__name__)
 LOGGER.debug(f"Initialized {__name__}")
-
-from time import time
-from typing import NamedTuple, List
-
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.lines import Line2D
-
-from mmcp.core import SolverError, Solver
-from mmcp.data import ModelData, generate_model_data
-from mmcp.utils import ModelType, Criterion
-
-
-# TODO: Move to Utils
-def _measure_execution_time(solver: Solver, warmup: int = 10, iterations: int = 10) -> List[float]:
-    """Measures the execution time of the solver.
-
-    Args:
-        solver: The Solver instance.
-        warmup: Number of warmup iterations.
-        iterations: Number of measurement iterations.
-
-    Returns:
-        A list of execution times in seconds. NaN is appended for SolverErrors.
-    """
-    times = list()
-    for _ in range(warmup + iterations):
-        try:
-            start_time = time()
-            solver.solve()
-            end_time = time()
-            times.append(end_time - start_time)
-        except SolverError as e:
-            LOGGER.error(f"Solver error: {e}")
-            times.append(np.nan)
-    return times[warmup:]
-
-
-# TODO: Move to Utils
-# noinspection PyProtectedMember
-def _get_model_data_element(data: NamedTuple, element_idx: int) -> ModelData:
-    """Retrieves data for a specific element index from a NamedTuple.
-
-    Args:
-        data: The NamedTuple containing model data.
-        element_idx: The index of the element to retrieve.
-
-    Returns:
-        A ModelData instance for the specified element.
-    """
-    LOGGER.debug(f"Retrieving data for element {element_idx + 1}.")
-    return ModelData(**{k: list(v)[element_idx] for k, v in data._asdict().items() if len(v) > element_idx})
-
-
-# TODO: Move to Utils
-def _is_valid_combination(model_type: ModelType, criterion: Criterion) -> bool:
-    """Checks if the model type and criterion combination is valid."""
-    if model_type == ModelType.LINEAR_MODEL_3 and criterion != Criterion.CRITERION_1:
-        return False
-    if model_type == ModelType.COMBINATORIAL_MODEL and criterion == Criterion.CRITERION_3:
-        return False
-    return True
 
 
 def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
@@ -86,7 +31,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
 
     for model_type in ModelType:
         for criterion in Criterion:
-            if not _is_valid_combination(model_type, criterion) or criterion == Criterion.CRITERION_3 or \
+            if not is_valid_combination(model_type, criterion) or criterion == Criterion.CRITERION_3 or \
                     model_type in (ModelType.LINEAR_MODEL_3, ModelType.COMBINATORIAL_MODEL):
                 continue
 
@@ -101,9 +46,9 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
                     data = generate_model_data(num_elements=1, num_vars=num_vars, threads=threads)
                     while data.d[0] is None:  # Retry if data generation fails
                         data = generate_model_data(num_elements=1, num_vars=num_vars, threads=threads)
-                    data = _get_model_data_element(data, 0)
+                    data = ith_data(data, 0)
                     solver = Solver(data, model_type, criterion)
-                    execution_times = _measure_execution_time(solver, iterations=iterations)
+                    execution_times = measure_execution_time(solver, iterations=iterations)
                     times.append(execution_times)
 
                 mean_times = np.nanmean(times, axis=1)

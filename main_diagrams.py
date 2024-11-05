@@ -50,11 +50,11 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                                 [mean_times[last_valid_idx], time_ms], linestyle='dashed', color='gray', linewidth=5)
                     else:
                         ax.plot([num_vars_range[last_valid_idx], num_vars_range[i]],
-                                [mean_times[last_valid_idx], time_ms], linestyle='solid', color='magenta', alpha=0.5,
+                                [mean_times[last_valid_idx], time_ms], linestyle='solid', color='magenta', alpha=.5,
                                 linewidth=5)
                     last_valid_idx = i
 
-                ax.boxplot(times, positions=num_vars_range, showfliers=False, widths=0.5)
+                ax.boxplot(times, positions=num_vars_range, showfliers=False, widths=.5)
 
                 ax.set_xlabel("Number of Variables")
                 ax.set_ylabel("Time (seconds)")

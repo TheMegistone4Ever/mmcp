@@ -35,7 +35,7 @@ def solve(processing_times, precedence_graph, weights, M):
             solver.Add(completion_times[j] >= completion_times[pred] + processing_times[j])
 
     # 2. Non-overlap constraints (simplified for LP relaxation)
-    #    Note: This is an approximation as it doesn't guarantee an optimal schedule in the combinatorial sense
+    #    Note: This is an approximation as it doesn’t guarantee an optimal schedule in the combinatorial sense
     for j in range(num_jobs):
         for k in range(j + 1, num_jobs):
             solver.Add(completion_times[j] >= completion_times[k] + processing_times[j] - M * (

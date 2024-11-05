@@ -47,10 +47,10 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
 
                     if i > last_valid_idx + 1:
                         ax.plot([num_vars_range[last_valid_idx], num_vars_range[i]],
-                                [mean_times[last_valid_idx], time_ms], linestyle='dashed', color='gray', linewidth=5)
+                                [mean_times[last_valid_idx], time_ms], linestyle="--", color="gray", linewidth=5)
                     else:
                         ax.plot([num_vars_range[last_valid_idx], num_vars_range[i]],
-                                [mean_times[last_valid_idx], time_ms], linestyle='solid', color='magenta', alpha=.5,
+                                [mean_times[last_valid_idx], time_ms], color="m", alpha=.5,
                                 linewidth=5)
                     last_valid_idx = i
 
@@ -59,8 +59,8 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                 ax.set_xlabel("Number of Variables")
                 ax.set_ylabel("Time (seconds)")
                 ax.set_title("Linear Model Performance")
-                plt.legend(handles=[Line2D([0], [0], color='magenta', lw=2, label='Mean'),
-                                    Line2D([0], [0], color='gray', lw=2, linestyle='dashed', label='Outliers')])
+                plt.legend(handles=[Line2D([0], [0], color="m", lw=2, label="Mean"),
+                                    Line2D([0], [0], color="gray", lw=2, linestyle="--", label="Outliers")])
                 plt.tight_layout()
                 filename = f"{root}\\{model_type.name}_{criterion.name}_[{num_vars_range[0]};{num_vars_range[-1]}].png"
                 plt.savefig(filename)

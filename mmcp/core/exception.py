@@ -20,7 +20,7 @@ class DataParsingError(BaseCustomError):
 
 class DataValidationError(BaseCustomError):
     """
-    Raised when the parsed data doesn't meet validation criteria.
+    Raised when the parsed data doesn’t meet validation criteria.
 
     This occurs when the parsed data fails to meet the required structure
     or contains invalid values according to the validation logic.
@@ -32,7 +32,7 @@ class ModelTypeError(BaseCustomError):
     """
     Raised when an invalid model type is specified.
 
-    This exception is used when the provided model type doesn't match
+    This exception is used when the provided model type doesn’t match
     any of the recognized or supported model types.
     """
     LOGGER.debug(f"Initialized {__name__}")

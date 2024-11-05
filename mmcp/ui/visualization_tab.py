@@ -215,6 +215,7 @@ class VisualizationTab(QWidget):
                       self.selected_model_type(element_idx),
                       self.selected_criterion(element_idx)).solve()
 
+    # TODO: Move to Utils
     # noinspection PyProtectedMember
     def ith_data(self, element_idx: int):
         """

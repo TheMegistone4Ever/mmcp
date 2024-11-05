@@ -92,6 +92,26 @@ class ModelData(NamedTuple):
         assert 0 <= element_idx < len(self.criteria), f"Invalid element index: {element_idx}"
         self.criteria[element_idx] = int(criterion)
 
+    def set_model_type_for_all(self, model_types: ndarray):
+        """
+        Sets or updates the model_type for all elements.
+
+        Args:
+            model_types: The new model_type values.
+        """
+        logging.debug(f"Setting model type for all elements to {model_types}")
+        self.model_types[:] = model_types
+
+    def set_criteria_for_all(self, criteria: ndarray):
+        """
+        Sets or updates the criteria for all elements.
+
+        Args:
+            criteria: The new criterion values.
+        """
+        logging.debug(f"Setting criterion for all elements to {criteria}")
+        self.criteria[:] = criteria
+
 
 class SolutionData(NamedTuple):
     logging.debug(f"Initialized {__name__}")

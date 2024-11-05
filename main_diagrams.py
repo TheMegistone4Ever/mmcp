@@ -15,7 +15,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
         threads: Number of threads to use for data generation (not used in current implementation).
 
     """
-    num_vars_range = np.linspace(1, 100, 50, dtype=int)
+    num_vars_range = np.linspace(1, 500, 100, dtype=int)
 
     for model_type in ModelType:
         for criterion in Criterion:
@@ -23,7 +23,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
                     model_type in (ModelType.LINEAR_MODEL_3, ModelType.COMBINATORIAL_MODEL):
                 continue
 
-            fig, ax = plt.subplots(1, 1, figsize=(16, 8), dpi=150)
+            fig, ax = plt.subplots(1, 1, figsize=(16, 10), dpi=150)
             fig.suptitle(f"Performance: {model_type.name} - {criterion.name}")
 
             times = list()

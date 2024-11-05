@@ -3,8 +3,8 @@ from typing import NamedTuple, List, Dict, Any
 from numpy import ndarray
 
 from mmcp.utils import ModelType, Criterion
-from ..utils.outs import message
 from ..utils.logger_setup import LOGGER
+from ..utils.outs import message
 
 
 class LinearModelData(NamedTuple):

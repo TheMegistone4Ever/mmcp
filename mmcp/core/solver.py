@@ -3,6 +3,7 @@ from mmcp.utils import Vars, ModelType, Criterion
 from .. import linear_models as lm, combinatorial_models as cm
 from ..utils.logger_setup import LOGGER
 
+
 class Solver:
     LOGGER.debug(f"Initialized {__name__}")
 

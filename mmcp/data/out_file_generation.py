@@ -5,8 +5,8 @@ from numpy import ndarray
 
 from mmcp.core import FileSavingError
 from mmcp.data import generate_model_data
-from ..utils.outs import with_precision
 from ..utils.logger_setup import LOGGER
+from ..utils.outs import with_precision
 
 
 # noinspection PyProtectedMember

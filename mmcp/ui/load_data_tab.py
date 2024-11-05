@@ -1,4 +1,4 @@
-import sys
+from sys import argv, exit as sys_exit
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QFileDialog, QMessageBox, QApplication, QVBoxLayout
@@ -78,7 +78,7 @@ class LoadDataTab(QWidget):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QApplication(argv)
     window = LoadDataTab()
     window.show()
-    sys.exit(app.exec_())
+    sys_exit(app.exec_())

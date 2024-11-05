@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.lines import Line2D
+from matplotlib.pyplot import subplots, savefig, show, legend, tight_layout
+from numpy import linspace, mean, isnan
 
 from mmcp.core import Solver
 from mmcp.data import generate_model_data
@@ -15,7 +15,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
         threads: Number of threads to use for data generation (not used in current implementation).
         root: Root directory to save the diagrams.
     """
-    num_vars_range = np.linspace(1, 100, 50, dtype=int)
+    num_vars_range = linspace(1, 100, 50, dtype=int)
 
     for model_type in ModelType:
         for criterion in Criterion:
@@ -23,7 +23,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                     model_type in (ModelType.LINEAR_MODEL_3, ModelType.COMBINATORIAL_MODEL):
                 continue
 
-            fig, ax = plt.subplots(1, 1, figsize=(16, 10), dpi=150)
+            fig, ax = subplots(1, 1, figsize=(16, 10), dpi=150)
             fig.suptitle(f"Performance: {str(model_type)} - {str(criterion)}")
 
             times = list()
@@ -39,10 +39,10 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                     execution_times = measure_execution_time(solver, iterations=iterations)
                     times.append(execution_times)
 
-                mean_times = np.mean(times, axis=1)
+                mean_times = mean(times, axis=1)
                 last_valid_idx = 0
                 for i, time_ms in enumerate(mean_times):
-                    if np.isnan(time_ms):
+                    if isnan(time_ms):
                         continue
 
                     if i > last_valid_idx + 1:
@@ -59,12 +59,12 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1, root: 
                 ax.set_xlabel("Number of Variables")
                 ax.set_ylabel("Time (seconds)")
                 ax.set_title("Linear Model Performance")
-                plt.legend(handles=[Line2D([0], [0], color="m", lw=2, label="Mean"),
-                                    Line2D([0], [0], color="gray", lw=2, linestyle="--", label="Outliers")])
-                plt.tight_layout()
+                legend(handles=[Line2D([0], [0], color="m", lw=2, label="Mean"),
+                                Line2D([0], [0], color="gray", lw=2, linestyle="--", label="Outliers")])
+                tight_layout()
                 filename = f"{root}\\{model_type.name}_{criterion.name}_[{num_vars_range[0]};{num_vars_range[-1]}].png"
-                plt.savefig(filename)
-                plt.show()
+                savefig(filename)
+                show()
                 LOGGER.info(f"Performance diagram for {model_type} and {criterion} saved to {filename}...")
 
 

@@ -1,5 +1,5 @@
-import logging
-import os
+from logging import basicConfig, getLogger, DEBUG
+from os import makedirs
 from pathlib import Path
 
 
@@ -13,13 +13,13 @@ def find_project_root(current_path: Path, root_identifier=".git"):
 PROJECT_ROOT = find_project_root(Path(__file__))
 LOGS_DIR = PROJECT_ROOT / "logs"
 
-os.makedirs(LOGS_DIR, exist_ok=True)
+makedirs(LOGS_DIR, exist_ok=True)
 
-logging.basicConfig(
+basicConfig(
     filename=LOGS_DIR / "mmcp.log",
-    level=logging.DEBUG,
+    level=DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = getLogger(__name__)
 LOGGER.debug(f"Logger initialized at {LOGS_DIR}...")

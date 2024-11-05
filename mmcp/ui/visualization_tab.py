@@ -1,4 +1,3 @@
-import logging
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from time import time
@@ -10,14 +9,11 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QTreeWidget, QTreeWidgetItem, QPus
 from mmcp.core import Solver, ConfigurationError, ModelTypeError, CriterionError
 from mmcp.data import ModelData, SolutionData
 from mmcp.ui import ElementConfigurationWindow
-from mmcp.utils import ModelType, Criterion, ith_data
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+from mmcp.utils import ModelType, Criterion, ith_data, LOGGER
 
 
 class VisualizationTab(QWidget):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
 
     def __init__(self, tab_widget, solution_display_tab):
         """
@@ -27,7 +23,7 @@ class VisualizationTab(QWidget):
         self.tree_widget = None
         self.checkbox_layout = None
         self.threads_combo = None
-        logging.debug("Initializing VisualizationTab.")
+        LOGGER.debug("Initializing VisualizationTab.")
 
         super().__init__()
 
@@ -126,7 +122,7 @@ class VisualizationTab(QWidget):
 
     def _create_master_checkbox(self):
         """Creates and adds the master checkbox to the layout."""
-        logging.debug("Creating master checkbox.")
+        LOGGER.debug("Creating master checkbox.")
         master_checkbox = QCheckBox("Select All", self)
         master_checkbox.setChecked(True)
         master_checkbox.stateChanged.connect(self.on_master_checkbox_changed)  # type: ignore
@@ -137,7 +133,7 @@ class VisualizationTab(QWidget):
         """
         Populates the tree widget with the data and manages checkboxes.
         """
-        logging.debug("Populating tree widget with data.")
+        LOGGER.debug("Populating tree widget with data.")
         self.tree_widget.clear()
         self.elements_checkboxes.clear()
 
@@ -159,7 +155,7 @@ class VisualizationTab(QWidget):
     # noinspection PyProtectedMember
     def _add_element_data_to_tree(self, element_item, element_idx):
         """Adds element data to the tree widget item."""
-        logging.debug(f"Adding data for element {element_idx + 1} to tree widget.")
+        LOGGER.debug(f"Adding data for element {element_idx + 1} to tree widget.")
         for k, v in self.data._asdict().items():
             if len(v) > element_idx:
                 QTreeWidgetItem(element_item, [f"{k}: {str(ModelType(v[element_idx]))
@@ -169,11 +165,11 @@ class VisualizationTab(QWidget):
         """
         Solves the optimization problem using the selected number of threads and maintains element order.
         """
-        logging.debug("Solve button clicked.")
+        LOGGER.debug("Solve button clicked.")
         solutions = SolutionData(names=list(), values=list())
 
         num_threads = int(self.threads_combo.currentText())  # Get selected thread count
-        logging.debug(f"Using {num_threads} threads for solving.")
+        LOGGER.debug(f"Using {num_threads} threads for solving.")
 
         start_time = time()
         with ThreadPoolExecutor(max_workers=num_threads) as pool:
@@ -181,34 +177,34 @@ class VisualizationTab(QWidget):
             for i, checkbox in enumerate(self.elements_checkboxes):
                 if not checkbox.isChecked():
                     continue
-                logging.debug(f"Submitting solve task for element {i + 1} to thread pool.")
+                LOGGER.debug(f"Submitting solve task for element {i + 1} to thread pool.")
                 futures[i] = pool.submit(self._solve_for_element, i)
 
             for element_idx, future in futures.items():
                 try:
                     solution = future.result()
                     if solution:
-                        logging.info(f"Solution found for element {element_idx + 1}: {solution}")
+                        LOGGER.info(f"Solution found for element {element_idx + 1}: {solution}")
                         solutions.names.append(f"Element №{element_idx + 1}")
                         solutions.values.append(solution)
                     else:
-                        logging.warning(f"No solution found for Element {element_idx + 1}.")
+                        LOGGER.warning(f"No solution found for Element {element_idx + 1}.")
                         QMessageBox.warning(self, "Warning", f"No solution found for Element {element_idx + 1}.")
                 except (ConfigurationError, ModelTypeError, CriterionError) as e:
-                    logging.exception(f"Failed to solve for Element {element_idx + 1}. Error: {e}")
+                    LOGGER.exception(f"Failed to solve for Element {element_idx + 1}. Error: {e}")
                     QMessageBox.critical(self, "Error", f"Failed to solve for Element {element_idx + 1}. Error: {e}")
                 except Exception as e:
-                    logging.exception(f"An unexpected error occurred: {e}")
+                    LOGGER.exception(f"An unexpected error occurred: {e}")
                     QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
         end_time = time()
-        logging.debug(f"Displaying solutions in SolutionDisplayTab. Time taken: {end_time - start_time:.4f} seconds.")
+        LOGGER.debug(f"Displaying solutions in SolutionDisplayTab. Time taken: {end_time - start_time:.4f} seconds.")
         self.solution_display_tab.display_solution(solutions, end_time - start_time)
         self.tab_widget.setCurrentIndex(2)  # Switch to Solution Display tab
 
     def _solve_for_element(self, element_idx):
         """Solves the optimization problem for a single element."""
-        logging.debug(f"Solving for element {element_idx + 1} with model type: "
-                      f"{self.selected_model_type(element_idx)} and criterion: {self.selected_criterion(element_idx)}")
+        LOGGER.debug(f"Solving for element {element_idx + 1} with model type: "
+                     f"{self.selected_model_type(element_idx)} and criterion: {self.selected_criterion(element_idx)}")
         return Solver(ith_data(self.data, element_idx),
                       self.selected_model_type(element_idx),
                       self.selected_criterion(element_idx)).solve()
@@ -217,7 +213,7 @@ class VisualizationTab(QWidget):
         """
         Get the selected model type for the given element index.
         """
-        logging.debug(f"Getting selected model type for element {element_idx + 1}.")
+        LOGGER.debug(f"Getting selected model type for element {element_idx + 1}.")
         config_window = self.config_windows.get(element_idx)
         if config_window is None:
             return ModelType.LINEAR_MODEL_1
@@ -229,7 +225,7 @@ class VisualizationTab(QWidget):
         """
         Get the selected criterion for the given element index.
         """
-        logging.debug(f"Getting selected criterion for element {element_idx + 1}.")
+        LOGGER.debug(f"Getting selected criterion for element {element_idx + 1}.")
         config_window = self.config_windows.get(element_idx)
         if config_window and config_window.criterion_combo:
             criteria = config_window.criterion_combo.currentIndex() + 1
@@ -237,14 +233,14 @@ class VisualizationTab(QWidget):
                 self.data.set_criteria(element_idx, criteria)
                 return Criterion(criteria)
             except ValueError:
-                logging.warning(f"Invalid criterion selected: {criteria}")
+                LOGGER.warning(f"Invalid criterion selected: {criteria}")
         return Criterion.CRITERION_1
 
     def set_data(self, data):
         """
         Sets the data for visualization.
         """
-        logging.debug(f"Setting data in VisualizationTab: {data}")
+        LOGGER.debug(f"Setting data in VisualizationTab: {data}")
         self.data = data
         self.solution_display_tab.set_filename(f"sol_{"x".join(map(str, self.data.A.shape))}")
         self.populate_tree()
@@ -253,7 +249,7 @@ class VisualizationTab(QWidget):
         """
         Shows a context menu for the tree widget items.
         """
-        logging.debug("Showing context menu.")
+        LOGGER.debug("Showing context menu.")
         item = self.tree_widget.itemAt(pos)
         if item:
             element_idx = self._get_element_idx_from_tree_item(item)
@@ -272,7 +268,7 @@ class VisualizationTab(QWidget):
 
     def _get_element_idx_from_tree_item(self, item):
         """Gets the element index from the tree widget item."""
-        logging.debug("Getting element index from tree item.")
+        LOGGER.debug("Getting element index from tree item.")
         while item.parent() is not None:
             item = item.parent()
         return self.tree_widget.indexOfTopLevelItem(item)
@@ -282,7 +278,7 @@ class VisualizationTab(QWidget):
         """
         Opens the configuration window for the specified element.
         """
-        logging.debug(f"Opening configuration window for element {element_idx + 1}.")
+        LOGGER.debug(f"Opening configuration window for element {element_idx + 1}.")
         element_data = {k: list(v)[element_idx] for k, v in self.data._asdict().items() if len(v) > element_idx}
 
         if element_idx not in self.config_windows:
@@ -298,14 +294,14 @@ class VisualizationTab(QWidget):
 
     def _update_tree_item(self, element_idx):
         """Updates the tree widget item for the given element index."""
-        logging.debug(f"Updating tree item for element {element_idx + 1}.")
+        LOGGER.debug(f"Updating tree item for element {element_idx + 1}.")
         element_item = self.tree_widget.topLevelItem(element_idx)
         element_item.takeChildren()
         self._add_element_data_to_tree(element_item, element_idx)
 
     def on_master_checkbox_changed(self, state):
         """Handles the master checkbox state change."""
-        logging.debug(f"Master checkbox changed to: {"Checked" if state == Qt.Checked else "Unchecked"}")
+        LOGGER.debug(f"Master checkbox changed to: {"Checked" if state == Qt.Checked else "Unchecked"}")
         for checkbox in self.elements_checkboxes:
             checkbox.blockSignals(True)
             checkbox.setChecked(state == Qt.Checked)
@@ -313,7 +309,7 @@ class VisualizationTab(QWidget):
 
     def on_element_checkbox_changed(self, state):
         """Handles the element checkbox state change."""
-        logging.debug(f"Element checkbox changed to: {"Checked" if state == Qt.Checked else "Unchecked"}")
+        LOGGER.debug(f"Element checkbox changed to: {"Checked" if state == Qt.Checked else "Unchecked"}")
         num_checked = sum(checkbox.isChecked() for checkbox in self.elements_checkboxes)
         total_checkboxes = len(self.elements_checkboxes)
 

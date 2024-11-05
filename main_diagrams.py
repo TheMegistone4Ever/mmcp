@@ -1,22 +1,10 @@
-import logging
-from os import makedirs
-from os.path import join
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
 from mmcp.core import Solver
 from mmcp.data import generate_model_data
-from mmcp.utils import ModelType, Criterion, is_valid_combination, ith_data, measure_execution_time
-
-# Configure logging
-LOGS_DIR = "./logs"
-makedirs(LOGS_DIR, exist_ok=True)
-logging.basicConfig(filename=join(LOGS_DIR, "mmcp.log"), level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-LOGGER = logging.getLogger(__name__)
-LOGGER.debug(f"Initialized {__name__}")
+from mmcp.utils import ModelType, Criterion, is_valid_combination, ith_data, measure_execution_time, LOGGER
 
 
 def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
@@ -51,7 +39,7 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
                     execution_times = measure_execution_time(solver, iterations=iterations)
                     times.append(execution_times)
 
-                mean_times = np.nanmean(times, axis=1)
+                mean_times = np.mean(times, axis=1)
                 last_valid_idx = 0
                 for i, time_ms in enumerate(mean_times):
                     if np.isnan(time_ms):
@@ -76,6 +64,9 @@ def generate_performance_diagrams(iterations: int = 10, threads: int = 1):
                 plt.tight_layout()
                 plt.savefig(f"performance_{model_type.name}_{criterion.name}.png")
                 plt.show()
+
+                LOGGER.info(f"Performance diagram for {model_type} and {criterion} saved to "
+                            f"performance_{model_type.name}_{criterion.name}.png")
 
 
 if __name__ == "__main__":

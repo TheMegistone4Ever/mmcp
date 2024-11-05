@@ -1,24 +1,15 @@
-import logging
-from os import makedirs
-from os.path import join
-
-logs_dir = r".\logs"
-makedirs(logs_dir, exist_ok=True)
-logging.basicConfig(filename=join(logs_dir, "mmcp.log"), level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox
 
-from mmcp.ui.CustomTabBar import CustomTabBar
 from mmcp.data import ModelData
-from mmcp.ui import LoadDataTab, VisualizationTab, SolutionDisplayTab
+from mmcp.ui import LoadDataTab, VisualizationTab, SolutionDisplayTab, CustomTabBar
+from mmcp.utils import LOGGER
 
 
 class MainWindow(QMainWindow):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
 
     def __init__(self):
-        logging.debug("Initializing MainWindow.")
+        LOGGER.debug("Initializing MainWindow.")
         super().__init__()
 
         self.setWindowTitle("Binary Production System Optimization")
@@ -81,13 +72,13 @@ class MainWindow(QMainWindow):
 
     def handle_data_loaded(self, data: ModelData):
         """Handle the data loaded signal from the LoadDataTab."""
-        logging.debug("Data loaded signal received in MainWindow.")
+        LOGGER.debug("Data loaded signal received in MainWindow.")
 
         if len(data.c) < 2:
-            logging.error("At least 2 elements are required.")
+            LOGGER.error("At least 2 elements are required.")
             QMessageBox.critical(self, "Error", "At least 2 elements are required.")
             return
 
-        logging.debug("Passing data to VisualizationTab.")
+        LOGGER.debug("Passing data to VisualizationTab.")
         self.visualization_tab.set_data(data)
         self.tab_widget.setCurrentIndex(1)  # Switch to Visualization tab

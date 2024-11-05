@@ -1,8 +1,3 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from codecs import open as codecs_open
 from json import dump, load
 
@@ -10,7 +5,8 @@ from numpy import ndarray
 
 from mmcp.core import FileSavingError
 from mmcp.data import generate_model_data
-from mmcp.utils import with_precision
+from ..utils.outs import with_precision
+from ..utils.logger_setup import LOGGER
 
 
 # noinspection PyProtectedMember
@@ -26,8 +22,8 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, 
         threads (int): The number of threads to use for data generation.
         data (dict): The data to write to the file. If None, synthetic data will be generated.
     """
-    logging.debug(f"Entering generate_data_json_file with filename={filename}, num_elements={num_elements}, "
-                  f"num_vars={num_vars}, num_jobs={num_jobs}, data={data}")
+    LOGGER.debug(f"Entering generate_data_json_file with filename={filename}, num_elements={num_elements}, "
+                 f"num_vars={num_vars}, num_jobs={num_jobs}, data={data}")
 
     if data is None:
         data = generate_model_data(num_elements, num_vars, num_jobs, threads)
@@ -48,9 +44,9 @@ def generate_data_json_file(filename, num_elements=5, num_vars=10, num_jobs=10, 
     with codecs_open(filename, "w", encoding="utf-8") as f:
         try:
             dump(dict_data, f, separators=(",", ":"), indent=2)
-            logging.info(f"Generated data file (JSON): {filename}")
+            LOGGER.info(f"Generated data file (JSON): {filename}")
         except OSError as e:
-            logging.exception(f"Error saving data to JSON file: {e}")
+            LOGGER.exception(f"Error saving data to JSON file: {e}")
             raise FileSavingError(f"Error saving data to JSON file: {e}") from e
 
 

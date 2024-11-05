@@ -1,11 +1,7 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from ortools.linear_solver import pywraplp
 
 from mmcp.core import SolverError
+from ...utils.logger_setup import LOGGER
 
 
 def solve(c, A, b, M):
@@ -23,8 +19,8 @@ def solve(c, A, b, M):
             - The optimal solution vector x.
             - The optimal objective value.
     """
-    logging.debug(f"Entering solve function in criterion_1.py (linear_models/first) with: "
-                  f"c={c}, A={A}, b={b}, M={M}")
+    LOGGER.debug(f"Entering solve function in criterion_1.py (linear_models/first) with: "
+                 f"c={c}, A={A}, b={b}, M={M}")
 
     solver = pywraplp.Solver.CreateSolver("GLOP")
 
@@ -58,14 +54,14 @@ def solve(c, A, b, M):
     solver_status = solver.Solve()
 
     if solver_status != pywraplp.Solver.OPTIMAL:
-        logging.error(f"Unable to find the optimal solution for the first linear model, first criterion. "
-                      f"{solver_status=}")
+        LOGGER.error(f"Unable to find the optimal solution for the first linear model, first criterion. "
+                     f"{solver_status=}")
         raise SolverError(f"Unable to find the optimal solution for the first linear model, first criterion. "
                           f"{solver_status=}")
 
     optimal_x = [x[i].solution_value() for i in range(num_vars)]
     optimal_objective = objective.Value()
-    logging.info(f"Optimal solution found for the first linear model, first criterion: "
-                 f"x={optimal_x}, objective={optimal_objective}")
+    LOGGER.info(f"Optimal solution found for the first linear model, first criterion: "
+                f"x={optimal_x}, objective={optimal_objective}")
 
     return optimal_x, optimal_objective

@@ -1,14 +1,11 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QTabBar
 
+from mmcp.utils import LOGGER
+
 
 class CustomTabBar(QTabBar):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
 
     def tabSizeHint(self, index):
         """

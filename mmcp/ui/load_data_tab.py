@@ -1,17 +1,14 @@
-import logging
 import sys
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QFileDialog, QMessageBox, QApplication, QVBoxLayout
 
 from mmcp.data import parse_data_json_file, ModelData
+from mmcp.utils import LOGGER
 
 
 class LoadDataTab(QWidget):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
     data_loaded = pyqtSignal(ModelData)
 
     def __init__(self):
@@ -63,20 +60,20 @@ class LoadDataTab(QWidget):
         Opens a file dialog to browse for a .json file.
         Emits the data_loaded signal if the file is successfully loaded.
         """
-        logging.debug("Browse button clicked in LoadDataTab.")
+        LOGGER.debug("Browse button clicked in LoadDataTab.")
 
         options = QFileDialog.Options()
         json_filter = "JSON Files (*.json);;All Files (*)"
         filename, _ = QFileDialog.getOpenFileName(self, "Load .json File", "", json_filter, options=options)
         if filename:
-            logging.debug(f"Selected file: {filename}")
+            LOGGER.debug(f"Selected file: {filename}")
             try:
                 data = parse_data_json_file(filename)
                 if data:
-                    logging.info(f"Data loaded successfully from: {filename}")
+                    LOGGER.info(f"Data loaded successfully from: {filename}")
                     self.data_loaded.emit(data)  # type: ignore
             except Exception as e:
-                logging.exception(f"An error occurred while parsing the data file: {e}")
+                LOGGER.exception(f"An error occurred while parsing the data file: {e}")
                 QMessageBox.critical(self, "Error", f"An error occurred: {e}")
 
 

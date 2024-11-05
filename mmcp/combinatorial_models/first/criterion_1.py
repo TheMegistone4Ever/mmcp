@@ -1,11 +1,7 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from ortools.linear_solver import pywraplp
 
 from mmcp.core import SolverError
+from ...utils.logger_setup import LOGGER
 
 
 def solve(processing_times, precedence_graph, weights, M):
@@ -21,10 +17,10 @@ def solve(processing_times, precedence_graph, weights, M):
     Returns:
         A list of job completion times (approximation).
     """
-    logging.debug(f"Entering solve function in criterion_1.py with: "
-                  f"processing_times={processing_times}, "
-                  f"precedence_graph={precedence_graph}, "
-                  f"weights={weights}, M={M}")
+    LOGGER.debug(f"Entering solve function in criterion_1.py with: "
+                 f"processing_times={processing_times}, "
+                 f"precedence_graph={precedence_graph}, "
+                 f"weights={weights}, M={M}")
 
     num_jobs = len(processing_times) if isinstance(processing_times, list) else 1
     solver = pywraplp.Solver.CreateSolver("GLOP")
@@ -56,11 +52,11 @@ def solve(processing_times, precedence_graph, weights, M):
     solver_status = solver.Solve()
 
     if solver_status != pywraplp.Solver.OPTIMAL:
-        logging.error(f"Unable to find the optimal solution for the combinatorial model, first criterion. "
-                      f"{solver_status=}")
+        LOGGER.error(f"Unable to find the optimal solution for the combinatorial model, first criterion. "
+                     f"{solver_status=}")
         raise SolverError(f"Unable to find the optimal solution for the combinatorial model, first criterion. "
                           f"{solver_status=}")
 
     approximate_completion_times = [c.solution_value() for c in completion_times]
-    logging.info(f"Approximate completion times calculated: {approximate_completion_times}")
+    LOGGER.info(f"Approximate completion times calculated: {approximate_completion_times}")
     return approximate_completion_times

@@ -1,24 +1,19 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox, QHBoxLayout, QComboBox,
                              QRadioButton)
 
 from mmcp.core import ConfigurationError
 from mmcp.data import ModelData
-from mmcp.utils import ModelType, Criterion
+from mmcp.utils import ModelType, Criterion, LOGGER
 
 
 class ElementConfigurationWindow(QDialog):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
 
     def __init__(self, master_data: ModelData, element_data, element_idx):
         """
         Initializes the element configuration window.
         """
-        logging.debug(f"Initializing ElementConfigurationWindow for element {element_idx + 1}.")
+        LOGGER.debug(f"Initializing ElementConfigurationWindow for element {element_idx + 1}.")
 
         super().__init__()
 
@@ -118,11 +113,11 @@ class ElementConfigurationWindow(QDialog):
         Args:
             model_type: The model type to set.
         """
-        logging.debug(f"Setting model type to {model_type} for element {self.element_idx + 1}")
+        LOGGER.debug(f"Setting model type to {model_type} for element {self.element_idx + 1}")
         try:
             self.master_data.set_model_type(self.element_idx, model_type)
         except AssertionError as e:
-            logging.exception(f"Error setting model type ({model_type}): {e}")
+            LOGGER.exception(f"Error setting model type ({model_type}): {e}")
             raise ConfigurationError(f"Error setting model type ({model_type}): {e}") from e
 
         self.criterion_combo.clear()
@@ -148,9 +143,9 @@ class ElementConfigurationWindow(QDialog):
             criterion: The criterion to set.
         """
         criterion = Criterion(max(1, min(3, criterion)))
-        logging.debug(f"Setting criterion to {criterion} for element {self.element_idx + 1}")
+        LOGGER.debug(f"Setting criterion to {criterion} for element {self.element_idx + 1}")
         try:
             self.master_data.set_criteria(self.element_idx, criterion)
         except AssertionError as e:
-            logging.exception(f"Error setting criterion ({criterion}): {e}")
+            LOGGER.exception(f"Error setting criterion ({criterion}): {e}")
             raise ConfigurationError(f"Error setting criterion ({criterion}): {e}") from e

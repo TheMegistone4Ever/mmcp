@@ -1,17 +1,14 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from typing import NamedTuple, List, Dict, Any
 
 from numpy import ndarray
 
-from mmcp.utils import ModelType, message, Criterion
+from mmcp.utils import ModelType, Criterion
+from ..utils.outs import message
+from ..utils.logger_setup import LOGGER
 
 
 class LinearModelData(NamedTuple):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
     c: ndarray = None
     A: ndarray = None
     b: ndarray = None
@@ -26,7 +23,7 @@ class LinearModelData(NamedTuple):
         Args:
             model_types: The new model_type values.
         """
-        logging.debug(f"Setting model type for all elements to {model_types}")
+        LOGGER.debug(f"Setting model type for all elements to {model_types}")
         self.model_types[:] = model_types
 
     def set_criteria_for_all(self, criteria: ndarray):
@@ -36,7 +33,7 @@ class LinearModelData(NamedTuple):
         Args:
             criteria: The new criterion values.
         """
-        logging.debug(f"Setting criterion for all elements to {criteria}")
+        LOGGER.debug(f"Setting criterion for all elements to {criteria}")
         self.criteria[:] = criteria
 
     def __repr__(self) -> str:
@@ -44,7 +41,7 @@ class LinearModelData(NamedTuple):
 
 
 class CombinatorialModelData(NamedTuple):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
     processing_times: ndarray = None
     precedence_graph: Dict[int, ndarray] = None
     weights: ndarray = None
@@ -54,7 +51,7 @@ class CombinatorialModelData(NamedTuple):
 
 
 class ModelData(NamedTuple):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
     c: ndarray = None
     A: ndarray = None
     b: ndarray = None
@@ -76,7 +73,7 @@ class ModelData(NamedTuple):
             element_idx: The index of the element to update.
             model_type: The new model_type value.
         """
-        logging.debug(f"Setting model type for element {element_idx} to {model_type}")
+        LOGGER.debug(f"Setting model type for element {element_idx} to {model_type}")
         assert 0 <= element_idx < len(self.model_types), f"Invalid element index: {element_idx}"
         self.model_types[element_idx] = int(model_type)
 
@@ -88,7 +85,7 @@ class ModelData(NamedTuple):
             element_idx: The index of the element to update.
             criterion: The new criterion value.
         """
-        logging.debug(f"Setting criterion for element {element_idx} to {criterion}")
+        LOGGER.debug(f"Setting criterion for element {element_idx} to {criterion}")
         assert 0 <= element_idx < len(self.criteria), f"Invalid element index: {element_idx}"
         self.criteria[element_idx] = int(criterion)
 
@@ -99,7 +96,7 @@ class ModelData(NamedTuple):
         Args:
             model_types: The new model_type values.
         """
-        logging.debug(f"Setting model type for all elements to {model_types}")
+        LOGGER.debug(f"Setting model type for all elements to {model_types}")
         self.model_types[:] = model_types
 
     def set_criteria_for_all(self, criteria: ndarray):
@@ -109,12 +106,12 @@ class ModelData(NamedTuple):
         Args:
             criteria: The new criterion values.
         """
-        logging.debug(f"Setting criterion for all elements to {criteria}")
+        LOGGER.debug(f"Setting criterion for all elements to {criteria}")
         self.criteria[:] = criteria
 
 
 class SolutionData(NamedTuple):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
     names: List[str] = list()
     values: List[Any] = list()
 

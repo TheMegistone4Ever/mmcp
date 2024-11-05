@@ -1,13 +1,10 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
 from json import dumps
 
 from numpy import ndarray, number
 
-logging.debug(f"Initialized {__name__}")
+from .logger_setup import LOGGER
+
+LOGGER.debug(f"Initialized {__name__}")
 
 
 def with_precision(value, precision=2) -> str:
@@ -18,7 +15,7 @@ def with_precision(value, precision=2) -> str:
         value: The value to print.
         precision (int): The number of decimal places to print.
     """
-    logging.debug(f"Formatting value with precision: {precision}")
+    LOGGER.debug(f"Formatting value with precision: {precision}")
 
     def format_value(val):
         if isinstance(val, (float, int)):

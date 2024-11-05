@@ -1,13 +1,10 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
-
 from abc import ABC, abstractmethod
+
+from ..utils.logger_setup import LOGGER
 
 
 class Model(ABC):
-    logging.debug(f"Initialized {__name__}")
+    LOGGER.debug(f"Initialized {__name__}")
 
     @abstractmethod
     def solve(self, *args, **kwargs):

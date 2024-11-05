@@ -1,14 +1,11 @@
-import logging
-
-logging.basicConfig(filename=r".\logs\mmcp.log", level=logging.DEBUG,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from numpy import set_printoptions, arange, array
 from numpy.random import seed, rand, randint, choice
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from mmcp.data import LinearModelData, CombinatorialModelData, ModelData
 from mmcp.utils import ModelType, Criterion
+from ..utils.logger_setup import LOGGER
 
 set_printoptions(precision=2, suppress=True)
 seed(1810)
@@ -24,6 +21,8 @@ def _criteria(model_type: ModelType) -> list[int]:
     Returns:
         A list of criteria.
     """
+    LOGGER.debug(f"Entering _criteria with model_type={model_type}")
+
     if model_type == ModelType.LINEAR_MODEL_1:
         return [int(Criterion.CRITERION_1), int(Criterion.CRITERION_2), int(Criterion.CRITERION_3)]
     if model_type == ModelType.LINEAR_MODEL_2:
@@ -46,8 +45,8 @@ def generate_linear_model_data(num_elements=5, num_vars=50, threads=1) -> Linear
     Returns:
         A LinearModelData object containing the generated data.
     """
-    logging.debug(f"Entering generate_linear_model_data with num_elements={num_elements}, num_vars={num_vars}, "
-                  f"threads={threads}")
+    LOGGER.debug(f"Entering generate_linear_model_data with num_elements={num_elements}, num_vars={num_vars}, "
+                 f"threads={threads}")
 
     with ThreadPoolExecutor(max_workers=threads) as executor:
         futures = {
@@ -74,7 +73,7 @@ def generate_linear_model_data(num_elements=5, num_vars=50, threads=1) -> Linear
         criteria=array([choice(_criteria(ModelType(model_type))) for model_type in model_types]),
         model_types=array(model_types),
     )
-    logging.info(f"Generated linear model data: {data}")
+    LOGGER.info(f"Generated linear model data: {data}")
     return data
 
 
@@ -90,8 +89,8 @@ def generate_combinatorial_model_data(num_vars=50, num_jobs=50, threads=1) -> Co
     Returns:
         A CombinatorialModelData object containing the generated data.
     """
-    logging.debug(f"Entering generate_combinatorial_model_data with num_vars={num_vars}, num_jobs={num_jobs}, "
-                  f"threads={threads}")
+    LOGGER.debug(f"Entering generate_combinatorial_model_data with num_vars={num_vars}, num_jobs={num_jobs}, "
+                 f"threads={threads}")
 
     with ThreadPoolExecutor(max_workers=threads) as executor:
         futures = {
@@ -114,7 +113,7 @@ def generate_combinatorial_model_data(num_vars=50, num_jobs=50, threads=1) -> Co
         precedence_graph=precedence_graph_dict,
         weights=results["weights"],
     )
-    logging.info(f"Generated combinatorial model data: {data}")
+    LOGGER.info(f"Generated combinatorial model data: {data}")
     return data
 
 
@@ -131,8 +130,8 @@ def generate_model_data(num_elements=5, num_vars=50, num_jobs=50, threads=1) -> 
     Returns:
         A ModelData object containing the generated data.
     """
-    logging.debug(f"Entering generate_model_data with num_elements={num_elements}, num_vars={num_vars}, "
-                  f"num_jobs={num_jobs}, threads={threads}")
+    LOGGER.debug(f"Entering generate_model_data with num_elements={num_elements}, num_vars={num_vars}, "
+                 f"num_jobs={num_jobs}, threads={threads}")
 
     linear_data = generate_linear_model_data(num_elements, num_vars, threads)
     linear_data.set_model_type_for_all(
@@ -143,7 +142,7 @@ def generate_model_data(num_elements=5, num_vars=50, num_jobs=50, threads=1) -> 
         *linear_data,
         *generate_combinatorial_model_data(num_vars, num_jobs, threads),
     )
-    logging.info(f"Generated model data: {data}")
+    LOGGER.info(f"Generated model data: {data}")
     return data
 
 
